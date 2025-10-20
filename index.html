@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giới thiệu | Shyn</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+      background-size: 400% 400%;
+      animation: gradientBG 10s ease infinite;
+      color: white;
+      text-align: center;
+    }
+
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    .avatar {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      border: 3px solid white;
+      margin-bottom: 20px;
+      object-fit: cover;
+      box-shadow: 0 0 15px rgba(255,255,255,0.4);
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin: 5px 0;
+    }
+
+    p {
+      max-width: 500px;
+      margin: 10px auto 20px;
+      font-size: 1rem;
+      line-height: 1.5;
+      opacity: 0.9;
+    }
+
+    .buttons a {
+      display: inline-block;
+      margin: 8px;
+      padding: 10px 20px;
+      border-radius: 30px;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      text-decoration: none;
+      transition: 0.3s;
+      backdrop-filter: blur(10px);
+    }
+
+    .buttons a:hover {
+      background: white;
+      color: #333;
+      transform: scale(1.05);
+    }
+
+    footer {
+      position: absolute;
+      bottom: 15px;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <img src="https://i.imgur.com/3t3QO8h.png" alt="avatar" class="avatar">
+  <h1>Xin chào, mình là <b>Shyn</b> 👋</h1>
+  <p>
+    Một người đam mê công nghệ, yêu sáng tạo và thích làm web.  
+    Đây là trang giới thiệu nhỏ để mọi người có thể biết thêm về mình.
+  </p>
+
+  <div class="buttons">
+    <a href="https://facebook.com" target="_blank">Facebook</a>
+    <a href="https://zalo.me" target="_blank">Zalo</a>
+    <a href="mailto:contact@shynmail.com">Email</a>
+    <a href="https://github.com/shyn2910" target="_blank">GitHub</a>
+  </div>
+
+  <footer>© 2025 Shyn | Designed by ChatGPT ✨</footer>
+</body>
+</html>
