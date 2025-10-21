@@ -1,56 +1,75 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đăng nhập | Shyn Private</title>
-  <script src="auth.js"></script>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: radial-gradient(circle at center, #232526, #414345);
-      height: 100vh; display:flex; justify-content:center; align-items:center; color:#fff;
-    }
-    .login-box {
-      background: rgba(255,255,255,0.1);
-      padding: 40px;
-      border-radius: 20px;
-      text-align:center;
-      box-shadow: 0 0 20px rgba(0,0,0,0.4);
-      width: 320px;
-    }
-    input {
-      width: 90%; padding:10px; border-radius:8px; border:none; outline:none; margin-top:10px; text-align:center;
-    }
-    button {
-      margin-top:15px; padding:10px 20px; border:none; border-radius:8px;
-      background:#ffdc73; color:#000; font-weight:bold; cursor:pointer;
-    }
-    button:hover { background:#fff; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng nhập - Shyn System</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+<style>
+body {font-family: Arial; background:#0d1117; color:white; text-align:center;}
+.container{margin-top:10%; background:#161b22; padding:30px; border-radius:10px; display:inline-block;}
+input,select{margin:5px; padding:10px; width:250px; border:none; border-radius:5px;}
+button{padding:10px 20px; border:none; border-radius:5px; background:#238636; color:white; cursor:pointer;}
+button:hover{background:#2ea043;}
+</style>
 </head>
 <body>
+<div class="container">
+  <h2>🔐 Hệ thống Shyn</h2>
+  <input type="text" id="username" placeholder="Tên đăng nhập"><br>
+  <input type="password" id="password" placeholder="Mật khẩu"><br>
+  <select id="role">
+    <option value="user">User</option>
+    <option value="admin">Admin</option>
+  </select><br>
+  <button onclick="register()">Đăng ký</button>
+  <button onclick="login()">Đăng nhập</button>
+  <p id="msg"></p>
+</div>
 
-  <div class="login-box">
-    <h2>🔒 Shyn Private Area</h2>
-    <input type="password" id="password" placeholder="Nhập mật khẩu..."><br>
-    <button onclick="handleLogin()">Đăng nhập</button>
-    <p style="font-size:0.8em;opacity:0.8;">Chỉ dành cho chủ sở hữu</p>
-  </div>
+<script>
+// ================== ⚙️ Firebase Config (Shyn App) ==================
+const firebaseConfig = {
+  apiKey: "AIzaSyD9XW1A1ns5cYlV3bI5i4HigR9HyUUYlvQ",
+  authDomain: "shyn-app-0709.firebaseapp.com",
+  databaseURL: "https://shyn-app-0709-default-rtdb.firebaseio.com",
+  projectId: "shyn-app-0709",
+  storageBucket: "shyn-app-0709.appspot.com",
+  messagingSenderId: "660274057745",
+  appId: "1:660274057745:web:ef7300abd53dec95d9d7b0",
+  measurementId: "G-2ZKCQ24770"
+};
+// ==========================================================
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-  <script>
-    async function handleLogin() {
-      const inputPass = document.getElementById("password").value.trim();
-      if (!inputPass) return alert("Vui lòng nhập mật khẩu!");
-      const valid = await verifyPassword(inputPass);
-      if (valid) {
-        localStorage.setItem("auth_granted", "true");
-        window.location.href = "index.html";
-      } else {
-        alert("❌ Sai mật khẩu!");
-      }
-    }
-  </script>
-
+async function register(){
+  const username=usernameInput.value.trim();
+  const password=passwordInput.value;
+  const role=roleInput.value;
+  const snap=await db.ref('users/'+username).get();
+  if(snap.exists()){msg.textContent="❌ Tên đã tồn tại";return;}
+  await db.ref('users/'+username).set({
+    password,role,balance:0,blocked:false,todos:[],links:[]
+  });
+  msg.textContent="✅ Đăng ký thành công!";
+}
+async function login(){
+  const username=usernameInput.value.trim();
+  const password=passwordInput.value;
+  const snap=await db.ref('users/'+username).get();
+  if(!snap.exists()){msg.textContent="Sai thông tin";return;}
+  const user=snap.val();
+  if(user.password!==password){msg.textContent="Sai mật khẩu";return;}
+  if(user.blocked){msg.textContent="🚫 Bị block";return;}
+  localStorage.setItem('currentUser',username);
+  location.href="dashboard.html";
+}
+const usernameInput=document.getElementById('username');
+const passwordInput=document.getElementById('password');
+const roleInput=document.getElementById('role');
+const msg=document.getElementById('msg');
+</script>
 </body>
 </html>
