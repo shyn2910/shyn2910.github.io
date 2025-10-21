@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Đăng nhập - Shyn System</title>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+<!-- ✅ Firebase compat SDK (dành cho HTML thuần, hoạt động trên GitHub Pages) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <style>
 body {
@@ -76,13 +76,12 @@ window.onload = () => {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // 🟢 Bây giờ DOM đã sẵn sàng, ta có thể lấy phần tử
+  // 🟢 DOM sẵn sàng
   const usernameInput = document.getElementById('username');
   const passwordInput = document.getElementById('password');
   const roleInput = document.getElementById('role');
   const msg = document.getElementById('msg');
 
-  // ================== Đăng ký ==================
   async function register() {
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
@@ -111,7 +110,6 @@ window.onload = () => {
     msg.textContent = "✅ Đăng ký thành công! Giờ bạn có thể đăng nhập.";
   }
 
-  // ================== Đăng nhập ==================
   async function login() {
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
@@ -139,10 +137,9 @@ window.onload = () => {
 
     localStorage.setItem('currentUser', username);
     msg.textContent = "✅ Đăng nhập thành công! Đang chuyển hướng...";
-    setTimeout(() => (location.href = "dashboard.html"), 700);
+    setTimeout(() => (location.href = "dashboard.html"), 800);
   }
 
-  // 🟢 Gắn sự kiện sau khi DOM load
   document.getElementById('btnRegister').onclick = register;
   document.getElementById('btnLogin').onclick = login;
 };
