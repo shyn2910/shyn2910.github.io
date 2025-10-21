@@ -14,7 +14,7 @@ const firebaseConfig = {
   messagingSenderId: "791284121791",
   appId: "1:791284121791:web:41d9a11047018847e8860a",
   measurementId: "G-ZMKBYPVNL4",
-  databaseURL: "https://shynapi-default-rtdb.firebaseio.com"
+  databaseURL: "https://shynapi-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
 // Khởi tạo
