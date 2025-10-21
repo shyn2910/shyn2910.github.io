@@ -1,0 +1,26 @@
+{
+  "settings": {
+    "depositInfo": "Chuyển khoản đến STK 123456789 - Ngân hàng ACB - Chủ TK: Shyn\nNội dung: NapTien_[Username]\n\nLưu ý: Sau khi chuyển khoản, số dư sẽ được cộng trong 5-10 phút."
+  },
+  "giftcodes": {
+    "SHYN2025": {
+      "amount": 100000,
+      "maxUses": 3,
+      "used": 0,
+      "active": true,
+      "createdAt": 1730000000000,
+      "createdBy": "system"
+    }
+  },
+  "leaderboard": {
+    "baicao": {},
+    "taixiu": {}
+  },
+  "users": {},
+  "usernames": {},
+  "rooms": {
+    "baicao": {},
+    "taixiu": {}
+  },
+  "transactions": {}
+}

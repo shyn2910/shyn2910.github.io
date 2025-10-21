@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ShynMMO Games — Multiplayer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f19; --card:#121727; --muted:#96a0b5; --primary:#5b8cff; --accent:#22d3ee;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  background: radial-gradient(1200px 600px at 10% -10%, #16203b 1%, transparent 50%), var(--bg);
+  color:#e5e7eb;
+}
+a{color:var(--accent); text-decoration:none}
+.container{max-width:1100px; margin:0 auto; padding:24px}
+.header{display:flex; gap:16px; align-items:center; justify-content:space-between; margin-bottom:16px}
+.brand{display:flex; align-items:center; gap:12px}
+.logo{
+  width:36px; height:36px; border-radius:12px;
+  background: linear-gradient(135deg, #5b8cff, #22d3ee);
+  box-shadow: 0 8px 24px rgba(34,211,238,.25);
+}
+.brand h1{font-size:18px; font-weight:800; letter-spacing:.4px; margin:0}
+.nav{display:flex; gap:8px; flex-wrap:wrap}
+.nav a,.nav button{
+  border:1px solid rgba(255,255,255,.08); background:#10162a; color:#dfe7ff;
+  border-radius:10px; padding:10px 12px; font-weight:600; cursor:pointer;
+}
+.nav a:hover,.nav button:hover{border-color:#3a6cf0}
+.card{
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+.hero{display:grid; grid-template-columns: 1.1fr .9fr; gap:18px; align-items:stretch}
+.hero .left{display:flex; flex-direction:column; gap:14px}
+.title{font-size:28px; font-weight:800; letter-spacing:.3px; margin:0}
+.subtitle{color:var(--muted)}
+.cta{display:flex; gap:10px; flex-wrap:wrap}
+.btn{background:linear-gradient(90deg,var(--primary),#7aa2ff); color:#0b0f19; border:none; border-radius:12px; padding:12px 16px; font-weight:800; cursor:pointer}
+.btn-secondary{background:#18213a; color:#dfe7ff}
+.grid{display:grid; gap:16px}
+.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.kpi{display:flex; align-items:center; gap:12px; padding:14px; border-radius:14px; background:#0f1424; border:1px solid rgba(255,255,255,.06)}
+.kpi .num{font-size:20px; font-weight:800}
+.kpi .label{color:#a6b2cf; font-size:12px}
+.section-title{font-size:18px; font-weight:800; margin:8px 0 10px}
+.feature{
+  background:#0f1424; border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:16px;
+  display:flex; flex-direction:column; gap:10px; justify-content:space-between
+}
+.feature .meta{color:#a6b2cf; font-size:13px}
+.pill{padding:4px 10px; border-radius:999px; font-size:12px; border:1px solid rgba(255,255,255,.12); background:#0f1424; color:#d5def8}
+.right{margin-left:auto}
+.footer{position:fixed; right:16px; bottom:10px; color:#93a1c8; font-size:12px; opacity:.6}
+@media (max-width: 980px){ .hero{grid-template-columns:1fr} }
+</style>
+
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<!-- Your Firebase config & helpers -->
+<script src="./js/firebase.js"></script>
+<script src="./js/util.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Header / Nav -->
+    <div class="header">
+      <div class="brand">
+        <div class="logo"></div>
+        <h1>ShynMMO Games</h1>
+      </div>
+      <div class="nav">
+        <a href="./baicao.html">Bài Cào</a>
+        <a href="./taixiu.html">Tài Xỉu</a>
+        <a href="./leaderboard.html">Bảng xếp hạng</a>
+        <a href="./lichsu.html">Lịch sử</a>
+        <a href="./deposit.html">Nạp tiền</a>
+        <a id="adminLink" href="./admin.html" style="display:none">Admin</a>
+        <button id="btnLogin" class="btn-secondary">Đăng nhập</button>
+        <button id="btnSignup" class="btn">Đăng ký</button>
+        <button id="btnLogout" class="btn-secondary" style="display:none">Đăng xuất</button>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="left card">
+        <h2 class="title">Chơi cùng bạn bè — Realtime • Nhanh • Công bằng</h2>
+        <div class="subtitle">
+          Hỗ trợ <b>Bài Cào (Miền Nam)</b> & <b>Tài Xỉu</b>, đồng bộ trạng thái phòng, cược, kết quả & thông báo thắng lớn nhất.
+          Có Lịch sử giao dịch, Giftcode, Nạp tiền và Bảng xếp hạng riêng từng game.
+        </div>
+        <div class="cta">
+          <button class="btn" onclick="location.href='./baicao.html'">Vào Bài Cào</button>
+          <button class="btn-secondary" onclick="location.href='./taixiu.html'">Chơi Tài Xỉu</button>
+          <button class="btn-secondary" onclick="location.href='./leaderboard.html'">Xem BXH</button>
+        </div>
+
+        <div id="userPanel" class="grid grid-3" style="margin-top:8px">
+          <div class="kpi">
+            <div>
+              <div class="num" id="kpiName">Khách</div>
+              <div class="label">Trạng thái</div>
+            </div>
+            <span class="pill right" id="kpiRole">guest</span>
+          </div>
+          <div class="kpi">
+            <div>
+              <div class="num" id="kpiBalance">0 đ</div>
+              <div class="label">Số dư</div>
+            </div>
+            <span class="pill right" id="kpiWins">0 thắng</span>
+          </div>
+          <div class="kpi">
+            <div>
+              <div class="num" id="kpiLosses">0</div>
+              <div class="label">Ván thua</div>
+            </div>
+            <span class="pill right" id="kpiUID">---</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions / Features -->
+      <div class="card">
+        <div class="section-title">Tính năng nhanh</div>
+        <div class="grid">
+          <div class="feature">
+            <div>
+              <b>🎮 Phòng chơi realtime</b>
+              <div class="meta">Tạo/phát hiện phòng ngay, đồng bộ người chơi & kết quả.</div>
+            </div>
+            <button class="btn-secondary" onclick="location.href='./baicao.html'">Vào danh sách phòng</button>
+          </div>
+
+          <div class="feature">
+            <div>
+              <b>🎁 Giftcode</b>
+              <div class="meta">Nhập code trong trang game để nhận tiền. Admin tạo code & giới hạn lượt.</div>
+            </div>
+            <button class="btn-secondary" onclick="location.href='./admin.html'">Quản trị (Admin)</button>
+          </div>
+
+          <div class="feature">
+            <div>
+              <b>🏆 Bảng xếp hạng</b>
+              <div class="meta">Top theo tổng tiền thắng từng game. Cập nhật realtime khi có người thắng.</div>
+            </div>
+            <button class="btn-secondary" onclick="location.href='./leaderboard.html'">Xem BXH</button>
+          </div>
+
+          <div class="feature">
+            <div>
+              <b>📜 Lịch sử giao dịch</b>
+              <div class="meta">Theo dõi bet/win/lose/giftcode/admin. Admin xem được của tất cả user.</div>
+            </div>
+            <button class="btn-secondary" onclick="location.href='./lichsu.html'">Mở lịch sử</button>
+          </div>
+
+          <div class="feature">
+            <div>
+              <b>💰 Nạp tiền</b>
+              <div class="meta">Hiển thị hướng dẫn từ admin (settings/depositInfo).</div>
+            </div>
+            <button class="btn-secondary" onclick="location.href='./deposit.html'">Xem hướng dẫn nạp</button>
+          </div>
+
+          <div class="feature">
+            <div>
+              <b>🛡️ Phân quyền động</b>
+              <div class="meta">Nút Admin chỉ hiện khi role=admin. Tự ẩn với user thường.</div>
+            </div>
+            <span class="pill right" id="roleIndicator">guest</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Secondary section -->
+    <div class="card" style="margin-top:18px">
+      <div class="section-title">Hướng dẫn nhanh</div>
+      <ol style="margin:0 0 0 18px; color:#c8d2f2">
+        <li>Đăng ký → Đăng nhập bằng <b>username + password</b>.</li>
+        <li>Tạo hoặc vào phòng chơi: <b>Bài Cào</b> / <b>Tài Xỉu</b>.</li>
+        <li>Người vào đầu là Host: quản lý <b>Bắt đầu ván</b> / <b>Xóc đĩa</b>.</li>
+        <li>Hệ thống tự động ghi <b>giao dịch</b> và <b>cập nhật BXH</b> khi thắng.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Watermark -->
+  <div class="footer">© ShynMMO Games 2025</div>
+
+<script>
+// Điều hướng nhanh auth
+document.getElementById('btnLogin').onclick = ()=> location.href='./login.html';
+document.getElementById('btnSignup').onclick = ()=> location.href='./signup.html';
+document.getElementById('btnLogout').onclick = async ()=>{
+  try{ await _auth.signOut(); toast('Đã đăng xuất'); location.reload(); }catch(e){ toast('Lỗi: '+e.message); }
+};
+
+// Hiển thị/ẩn Admin + KPI người dùng
+_auth.onAuthStateChanged(async (user)=>{
+  const adminLink = document.getElementById('adminLink');
+  const btnLogin = document.getElementById('btnLogin');
+  const btnSignup = document.getElementById('btnSignup');
+  const btnLogout = document.getElementById('btnLogout');
+
+  if(!user){
+    adminLink.style.display='none';
+    btnLogin.style.display='inline-block';
+    btnSignup.style.display='inline-block';
+    btnLogout.style.display='none';
+    document.getElementById('kpiName').textContent = 'Khách';
+    document.getElementById('kpiRole').textContent = 'guest';
+    document.getElementById('kpiBalance').textContent = '0 đ';
+    document.getElementById('kpiWins').textContent = '0 thắng';
+    document.getElementById('kpiLosses').textContent = '0';
+    document.getElementById('kpiUID').textContent = '---';
+    document.getElementById('roleIndicator').textContent = 'guest';
+    return;
+  }
+
+  try{
+    const snap = await _db.ref('users/'+user.uid).get();
+    const p = snap.exists()? snap.val() : {};
+    const isAdmin = (p.role === 'admin');
+
+    adminLink.style.display = isAdmin ? 'inline-block' : 'none';
+    btnLogin.style.display='none';
+    btnSignup.style.display='none';
+    btnLogout.style.display='inline-block';
+
+    document.getElementById('kpiName').textContent = p.username || user.email || user.uid;
+    document.getElementById('kpiRole').textContent = p.role || 'user';
+    document.getElementById('kpiBalance').textContent = formatMoney(p.balance||0) + ' đ';
+    document.getElementById('kpiWins').textContent = (p.wins||0) + ' thắng';
+    document.getElementById('kpiLosses').textContent = (p.losses||0);
+    document.getElementById('kpiUID').textContent = user.uid.slice(0,6)+'…';
+    document.getElementById('roleIndicator').textContent = p.role || 'user';
+
+    toast('Xin chào ' + (p.username || 'bạn'));
+  }catch(err){
+    console.error(err); toast('Lỗi tải hồ sơ: '+err.message);
+  }
+});
+</script>
+</body>
+</html>

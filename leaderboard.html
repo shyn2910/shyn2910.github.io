@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Bảng xếp hạng - ShynMMO Games</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+body{background:#0b0f19;color:#fff;font-family:Inter;margin:0;padding:20px}
+.card{background:rgba(255,255,255,.05);border-radius:16px;padding:20px;margin:20px auto;max-width:1000px;box-shadow:0 0 20px rgba(0,0,0,.5)}
+h2{margin:0 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+table{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden}
+th,td{padding:10px 12px;border-bottom:1px dashed rgba(255,255,255,.12);text-align:left}
+th{color:#9fb0d1;text-transform:uppercase;font-size:12px;letter-spacing:.06em}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;background:#121826;border:1px solid rgba(255,255,255,.12);font-size:12px}
+footer{position:fixed;right:20px;bottom:10px;color:#888;font-size:12px;opacity:.6}
+.info{color:#9fb0d1;font-size:13px;margin-top:6px}
+a{color:#22d3ee;text-decoration:none}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="./js/firebase.js"></script>
+<script src="./js/util.js"></script>
+</head>
+<body>
+<div class="card">
+  <h2>🏆 Bảng xếp hạng</h2>
+  <div class="info">Xếp hạng theo <b>tổng tiền thắng</b> của từng game. Cập nhật realtime.</div>
+  <div class="grid" style="margin-top:16px">
+    <div class="card">
+      <h3>🃏 Top Bài Cào</h3>
+      <table>
+        <thead><tr><th>Hạng</th><th>Người chơi</th><th>Tổng thắng</th></tr></thead>
+        <tbody id="top-baicao"><tr><td colspan="3">Đang tải...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>🎲 Top Tài Xỉu</h3>
+      <table>
+        <thead><tr><th>Hạng</th><th>Người chơi</th><th>Tổng thắng</th></tr></thead>
+        <tbody id="top-taixiu"><tr><td colspan="3">Đang tải...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="info" style="margin-top:8px">
+    Mẹo: Nếu chưa thấy dữ liệu, hãy chơi vài ván thắng để tạo node <code>leaderboard/&lt;game&gt;/&lt;uid&gt;</code>.
+  </div>
+</div>
+<footer>© ShynMMO Games 2025</footer>
+
+<script>
+requireAuth(async (user)=>{
+  // Lấy map uid->username để hiển thị
+  const usersSnap = await _db.ref('users').get();
+  const userMap = usersSnap.exists() ? usersSnap.val() : {};
+
+  function renderGame(game, elId){
+    _db.ref('leaderboard/'+game).on('value', snap=>{
+      const tbody = document.getElementById(elId);
+      if(!snap.exists()){ tbody.innerHTML = '<tr><td colspan="3">Chưa có dữ liệu</td></tr>'; return; }
+      const rows = [];
+      snap.forEach(cs=>{
+        rows.push({ uid: cs.key, total: Number(cs.val()||0) });
+      });
+      rows.sort((a,b)=>b.total-a.total);
+      const top = rows.slice(0,10);
+      tbody.innerHTML = top.map((r,idx)=>{
+        const name = userMap[r.uid]?.username || r.uid.slice(0,6)+'...';
+        return `<tr>
+          <td><span class="badge">#${idx+1}</span></td>
+          <td>${name}</td>
+          <td><b>${formatMoney(r.total)}</b> đ</td>
+        </tr>`;
+      }).join('');
+      if(top.length===0) tbody.innerHTML = '<tr><td colspan="3">Chưa có dữ liệu</td></tr>';
+    });
+  }
+
+  renderGame('baicao','top-baicao');
+  renderGame('taixiu','top-taixiu');
+});
+</script>
+</body>
+</html>

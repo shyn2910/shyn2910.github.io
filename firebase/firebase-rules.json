@@ -1,0 +1,68 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "usernames": {
+      "$uname": {
+        ".read": false,
+        ".write": "auth != null"
+      }
+    },
+
+    "users": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        "locked": { ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'" },
+        "role":   { ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'" }
+      }
+    },
+
+    "giftcodes": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      }
+    },
+
+    "redeems": {
+      "$uid": {
+        "$code": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid"
+        }
+      }
+    },
+
+    "transactions": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+
+    "leaderboard": {
+      "$game": {
+        "$uid": {
+          ".read": true,
+          ".write": "auth != null && auth.uid === $uid"
+        }
+      }
+    },
+
+    "rooms": {
+      "$game": {
+        ".read": true,
+        ".write": "auth != null"
+      }
+    },
+
+    "settings": {
+      "depositInfo": {
+        ".read": "auth != null",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      }
+    }
+  }
+}

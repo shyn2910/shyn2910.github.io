@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Nạp tiền - ShynMMO Games</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+body{background:#0b0f19;color:#e5e7eb;font-family:Inter;margin:0;padding:20px}
+.card{background:rgba(255,255,255,.05);border-radius:16px;padding:18px;margin:16px auto;max-width:900px;box-shadow:0 0 20px rgba(0,0,0,.5)}
+h2{margin:0 0 10px}
+.small{color:#9fb0d1;font-size:13px}
+pre{white-space:pre-wrap;background:#121826;padding:12px;border-radius:10px}
+footer{position:fixed;right:20px;bottom:10px;color:#888;font-size:12px;opacity:.6}
+button{border:none;border-radius:10px;padding:10px 14px;background:#22d3ee;color:#000;font-weight:800;cursor:pointer}
+a{color:#22d3ee;text-decoration:none}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="./js/firebase.js"></script>
+<script src="./js/util.js"></script>
+</head>
+<body>
+
+<div class="card">
+  <h2>💰 Nạp tiền</h2>
+  <div id="me" class="small">Đang tải...</div>
+  <div class="row" style="margin-top:8px">
+    <button onclick="location.href='baicao.html'">Về Bài Cào</button>
+    <button onclick="location.href='taixiu.html'">Về Tài Xỉu</button>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>Hướng dẫn nạp</h3>
+    <pre id="depositInfo">Đang tải...</pre>
+    <div class="small">Nội dung này được admin cấu hình tại <code>settings/depositInfo</code>.</div>
+  </div>
+</div>
+
+<footer>© ShynMMO Games 2025</footer>
+
+<script>
+requireAuth(async (u)=>{
+  const prof=(await _db.ref('users/'+u.uid).get()).val();
+  document.getElementById('me').innerHTML = `Xin chào <b>${prof.username}</b> — Số dư: <b>${formatMoney(prof.balance||0)}đ</b>`;
+});
+_db.ref('settings/depositInfo').on('value', snap=>{
+  document.getElementById('depositInfo').textContent = snap.exists()? snap.val(): 'Chưa có hướng dẫn nạp.';
+});
+</script>
+</body>
+</html>
