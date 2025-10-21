@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản trị hệ thống</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>👑 TRANG QUẢN TRỊ</h2>
+  <div id="userList"></div>
+  <input id="giftValue" type="number" placeholder="Giá trị Giftcode">
+  <button id="createGift">Tạo Giftcode</button>
+  <button onclick="logout()">Đăng xuất</button>
+
+  <script type="module">
+    import { db, auth, ref, set, get, child, update, onValue, onAuthStateChanged } from "./firebase.js";
+
+    const dbRef = ref(db);
+    const userList = document.getElementById("userList");
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return window.location = "index.html";
+      const snap = await get(child(dbRef, "users/" + user.uid));
+      const info = snap.val();
+      if (info.role !== "admin") return window.location = "game.html";
+
+      onValue(ref(db, "users"), (s) => {
+        userList.innerHTML = "<h3>Danh sách User</h3>";
+        s.forEach(u => {
+          const d = u.val();
+          const div = document.createElement('div');
+          div.innerHTML = `${d.username} — ${d.balance}₫`;
+          userList.appendChild(div);
+        });
+      });
+    });
+
+    document.getElementById("createGift").onclick = async () => {
+      const value = parseInt(document.getElementById("giftValue").value);
+      if (!value) return alert("Nhập giá trị!");
+      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      await set(ref(db, "giftcodes/" + code), { value, used: false });
+      alert("🎁 Giftcode: " + code);
+    };
+
+    window.logout = () => {
+      auth.signOut();
+      window.location = "index.html";
+    };
+  </script>
+</body>
+</html>
