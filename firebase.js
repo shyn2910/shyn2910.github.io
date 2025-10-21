@@ -1,5 +1,4 @@
-<!-- firebase.js -->
-<script type="module">
+// firebase.js (sửa chuẩn)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import { getDatabase, ref, set, get, child, update, onValue, push } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
@@ -23,4 +22,3 @@ export {
   app, db, auth, ref, set, get, child, update, onValue, push,
   createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged
 };
-</script>
