@@ -9,7 +9,7 @@ async function hashPassword(password) {
 }
 
 // 🔐 Hash mật khẩu thật của bạn (bạn tự tạo hash trước)
-const correctHash = "0d45eaa6dce7f1f57eaf0e00a26bbda0c37267e67f42b3b97a134f9ef4cb4d4b"; 
+const correctHash = "cc7f70c3f3f8b515a63ceea89580af475e77792f9ffb93f0d54bb003da055fac"; 
 // (hash này là ví dụ, bạn sẽ thay bằng hash của pass riêng mình)
 
 async function verifyPassword(inputPass) {
