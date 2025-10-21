@@ -1,148 +1,62 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Đăng nhập - Shyn System</title>
-
-<!-- ✅ Firebase compat SDK (dành cho HTML thuần, hoạt động trên GitHub Pages) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #0d1117;
-  color: white;
-  text-align: center;
-}
-.container {
-  margin-top: 10%;
-  background: #161b22;
-  padding: 30px;
-  border-radius: 10px;
-  display: inline-block;
-}
-input, select {
-  margin: 5px;
-  padding: 10px;
-  width: 250px;
-  border: none;
-  border-radius: 5px;
-}
-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  background: #238636;
-  color: white;
-  cursor: pointer;
-}
-button:hover {
-  background: #2ea043;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>Đăng nhập Caro Online</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <h2>🎮 CARO ONLINE</h2>
+  <div class="container">
+    <input type="text" id="username" placeholder="Tên người dùng">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Mật khẩu">
+    <button id="registerBtn">Đăng ký</button>
+    <button id="loginBtn">Đăng nhập</button>
+  </div>
 
-<div class="container">
-  <h2>🔐 Hệ thống Shyn</h2>
-  <input type="text" id="username" placeholder="Tên đăng nhập"><br>
-  <input type="password" id="password" placeholder="Mật khẩu"><br>
-  <select id="role">
-    <option value="user">User</option>
-    <option value="admin">Admin</option>
-  </select><br>
-  <button id="btnRegister">Đăng ký</button>
-  <button id="btnLogin">Đăng nhập</button>
-  <p id="msg"></p>
-</div>
+  <script type="module">
+    import { db, auth, ref, set, get, child, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "./firebase.js";
 
-<script>
-// ================== ⚙️ Firebase Config (Shyn App) ==================
-const firebaseConfig = {
-  apiKey: "AIzaSyD9XW1A1ns5cYlV3bI5i4HigR9HyUUYlvQ",
-  authDomain: "shyn-app-0709.firebaseapp.com",
-  databaseURL: "https://shyn-app-0709-default-rtdb.firebaseio.com",
-  projectId: "shyn-app-0709",
-  storageBucket: "shyn-app-0709.appspot.com",
-  messagingSenderId: "660274057745",
-  appId: "1:660274057745:web:ef7300abd53dec95d9d7b0",
-  measurementId: "G-2ZKCQ24770"
-};
-// ==========================================================
+    const dbRef = ref(db);
+    const username = document.getElementById("username");
+    const email = document.getElementById("email");
+    const password = document.getElementById("password");
 
-window.onload = () => {
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  // 🟢 DOM sẵn sàng
-  const usernameInput = document.getElementById('username');
-  const passwordInput = document.getElementById('password');
-  const roleInput = document.getElementById('role');
-  const msg = document.getElementById('msg');
-
-  async function register() {
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value;
-    const role = roleInput.value;
-
-    if (!username || !password) {
-      msg.textContent = "⚠️ Vui lòng nhập đầy đủ thông tin!";
-      return;
+    async function register() {
+      if (!username.value || !email.value || !password.value) return alert("Nhập đầy đủ thông tin!");
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
+        const user = userCredential.user;
+        const snapshot = await get(child(dbRef, "users"));
+        const role = (!snapshot.exists()) ? "admin" : "member";
+        await set(ref(db, "users/" + user.uid), {
+          username: username.value,
+          email: email.value,
+          balance: role === "admin" ? 1000000 : 0,
+          role
+        });
+        alert("Đăng ký thành công!");
+        window.location = role === "admin" ? "admin.html" : "game.html";
+      } catch (e) {
+        alert(e.message);
+      }
     }
 
-    const snap = await db.ref('users/' + username).get();
-    if (snap.exists()) {
-      msg.textContent = "❌ Tên đăng nhập đã tồn tại!";
-      return;
+    async function login() {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
+        const user = userCredential.user;
+        const snap = await get(child(dbRef, "users/" + user.uid));
+        const data = snap.val();
+        window.location = data.role === "admin" ? "admin.html" : "game.html";
+      } catch {
+        alert("Sai tài khoản hoặc mật khẩu!");
+      }
     }
 
-    await db.ref('users/' + username).set({
-      password,
-      role,
-      balance: 0,
-      blocked: false,
-      todos: [],
-      links: []
-    });
-
-    msg.textContent = "✅ Đăng ký thành công! Giờ bạn có thể đăng nhập.";
-  }
-
-  async function login() {
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value;
-
-    if (!username || !password) {
-      msg.textContent = "⚠️ Vui lòng nhập đủ thông tin!";
-      return;
-    }
-
-    const snap = await db.ref('users/' + username).get();
-    if (!snap.exists()) {
-      msg.textContent = "❌ Tài khoản không tồn tại!";
-      return;
-    }
-
-    const user = snap.val();
-    if (user.password !== password) {
-      msg.textContent = "❌ Sai mật khẩu!";
-      return;
-    }
-    if (user.blocked) {
-      msg.textContent = "🚫 Tài khoản của bạn đã bị khóa!";
-      return;
-    }
-
-    localStorage.setItem('currentUser', username);
-    msg.textContent = "✅ Đăng nhập thành công! Đang chuyển hướng...";
-    setTimeout(() => (location.href = "dashboard.html"), 800);
-  }
-
-  document.getElementById('btnRegister').onclick = register;
-  document.getElementById('btnLogin').onclick = login;
-};
-</script>
+    document.getElementById("registerBtn").onclick = register;
+    document.getElementById("loginBtn").onclick = login;
+  </script>
 </body>
 </html>
