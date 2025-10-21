@@ -4,17 +4,47 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Đăng nhập - Shyn System</title>
+
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+
 <style>
-body {font-family: Arial; background:#0d1117; color:white; text-align:center;}
-.container{margin-top:10%; background:#161b22; padding:30px; border-radius:10px; display:inline-block;}
-input,select{margin:5px; padding:10px; width:250px; border:none; border-radius:5px;}
-button{padding:10px 20px; border:none; border-radius:5px; background:#238636; color:white; cursor:pointer;}
-button:hover{background:#2ea043;}
+body {
+  font-family: Arial, sans-serif;
+  background: #0d1117;
+  color: white;
+  text-align: center;
+}
+.container {
+  margin-top: 10%;
+  background: #161b22;
+  padding: 30px;
+  border-radius: 10px;
+  display: inline-block;
+}
+input, select {
+  margin: 5px;
+  padding: 10px;
+  width: 250px;
+  border: none;
+  border-radius: 5px;
+}
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background: #238636;
+  color: white;
+  cursor: pointer;
+}
+button:hover {
+  background: #2ea043;
+}
 </style>
 </head>
 <body>
+
 <div class="container">
   <h2>🔐 Hệ thống Shyn</h2>
   <input type="text" id="username" placeholder="Tên đăng nhập"><br>
@@ -44,32 +74,71 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-async function register(){
-  const username=usernameInput.value.trim();
-  const password=passwordInput.value;
-  const role=roleInput.value;
-  const snap=await db.ref('users/'+username).get();
-  if(snap.exists()){msg.textContent="❌ Tên đã tồn tại";return;}
-  await db.ref('users/'+username).set({
-    password,role,balance:0,blocked:false,todos:[],links:[]
+// 🟢 Đặt biến lên trên để tránh lỗi “Cannot access before initialization”
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+const roleInput = document.getElementById('role');
+const msg = document.getElementById('msg');
+
+// ================== Đăng ký ==================
+async function register() {
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
+  const role = roleInput.value;
+
+  if (!username || !password) {
+    msg.textContent = "⚠️ Vui lòng nhập đầy đủ thông tin!";
+    return;
+  }
+
+  const snap = await db.ref('users/' + username).get();
+  if (snap.exists()) {
+    msg.textContent = "❌ Tên đăng nhập đã tồn tại!";
+    return;
+  }
+
+  await db.ref('users/' + username).set({
+    password,
+    role,
+    balance: 0,
+    blocked: false,
+    todos: [],
+    links: []
   });
-  msg.textContent="✅ Đăng ký thành công!";
+
+  msg.textContent = "✅ Đăng ký thành công! Giờ bạn có thể đăng nhập.";
 }
-async function login(){
-  const username=usernameInput.value.trim();
-  const password=passwordInput.value;
-  const snap=await db.ref('users/'+username).get();
-  if(!snap.exists()){msg.textContent="Sai thông tin";return;}
-  const user=snap.val();
-  if(user.password!==password){msg.textContent="Sai mật khẩu";return;}
-  if(user.blocked){msg.textContent="🚫 Bị block";return;}
-  localStorage.setItem('currentUser',username);
-  location.href="dashboard.html";
+
+// ================== Đăng nhập ==================
+async function login() {
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
+
+  if (!username || !password) {
+    msg.textContent = "⚠️ Vui lòng nhập đủ thông tin!";
+    return;
+  }
+
+  const snap = await db.ref('users/' + username).get();
+  if (!snap.exists()) {
+    msg.textContent = "❌ Tài khoản không tồn tại!";
+    return;
+  }
+
+  const user = snap.val();
+  if (user.password !== password) {
+    msg.textContent = "❌ Sai mật khẩu!";
+    return;
+  }
+  if (user.blocked) {
+    msg.textContent = "🚫 Tài khoản của bạn đã bị khóa!";
+    return;
+  }
+
+  localStorage.setItem('currentUser', username);
+  msg.textContent = "✅ Đăng nhập thành công! Đang chuyển hướng...";
+  setTimeout(() => (location.href = "dashboard.html"), 700);
 }
-const usernameInput=document.getElementById('username');
-const passwordInput=document.getElementById('password');
-const roleInput=document.getElementById('role');
-const msg=document.getElementById('msg');
 </script>
 </body>
 </html>
