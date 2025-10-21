@@ -2,9 +2,13 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard - Shyn System</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+
+<!-- ✅ Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
 <style>
 body{font-family:Arial;background:#0d1117;color:white;}
 section{background:#161b22;margin:10px;padding:15px;border-radius:10px;}
@@ -64,106 +68,102 @@ const firebaseConfig = {
 };
 // ==========================================================
 firebase.initializeApp(firebaseConfig);
-const db=firebase.database();
+const db = firebase.database();
 
-const uname=localStorage.getItem('currentUser');
-if(!uname)location.href="index.html";
+const uname = localStorage.getItem('currentUser');
+if (!uname) location.href = "index.html";
 let userData;
 
-const unameEl=document.getElementById('uname');
-const uroleEl=document.getElementById('urole');
-const ubalanceEl=document.getElementById('ubalance');
+const unameEl = document.getElementById('uname');
+const uroleEl = document.getElementById('urole');
+const ubalanceEl = document.getElementById('ubalance');
 
-async function loadUser(){
-  const snap=await db.ref('users/'+uname).get();
-  userData=snap.val();
-  unameEl.textContent=uname;
-  uroleEl.textContent=userData.role;
-  ubalanceEl.textContent=userData.balance+" VND";
-  if(userData.role==="admin")document.getElementById('admin').style.display='block';
+async function loadUser() {
+  const snap = await db.ref('users/' + uname).get();
+  userData = snap.val();
+  unameEl.textContent = uname;
+  uroleEl.textContent = userData.role;
+  ubalanceEl.textContent = userData.balance + " VND";
+  if (userData.role === "admin") document.getElementById('admin').style.display = 'block';
   renderTodos();
   renderLinks();
 }
 loadUser();
 
 // ================= To-do List =================
-function renderTodos(){
-  const ul=document.getElementById('todoList'); ul.innerHTML="";
-  (userData.todos||[]).forEach((t,i)=>{
-    const li=document.createElement('li');li.textContent=t;
-    li.onclick=()=>{userData.todos.splice(i,1);saveUser();};
+function renderTodos() {
+  const ul = document.getElementById('todoList'); ul.innerHTML = "";
+  (userData.todos || []).forEach((t, i) => {
+    const li = document.createElement('li'); li.textContent = t;
+    li.onclick = () => { userData.todos.splice(i, 1); saveUser(); };
     ul.appendChild(li);
   });
 }
-function addTodo(){
-  const t=document.getElementById('todo').value.trim(); if(!t)return;
-  userData.todos=userData.todos||[]; userData.todos.push(t); saveUser();
-  document.getElementById('todo').value="";
+function addTodo() {
+  const t = document.getElementById('todo').value.trim(); if (!t) return;
+  userData.todos = userData.todos || []; userData.todos.push(t); saveUser();
+  document.getElementById('todo').value = "";
 }
 
 // ================= Links =================
-function renderLinks(){
-  const div=document.getElementById('links');div.innerHTML="";
-  (userData.links||[]).forEach(l=>{
-    const b=document.createElement('button');b.textContent=l.name;
-    b.onclick=()=>window.open(l.url,'_blank');div.appendChild(b);
+function renderLinks() {
+  const div = document.getElementById('links'); div.innerHTML = "";
+  (userData.links || []).forEach(l => {
+    const b = document.createElement('button'); b.textContent = l.name;
+    b.onclick = () => window.open(l.url, '_blank'); div.appendChild(b);
   });
 }
-function addLink(){
-  const n=lname.value.trim(),u=lurl.value.trim();if(!n||!u)return;
-  userData.links=userData.links||[];userData.links.push({name:n,url:u});
-  saveUser();lname.value="";lurl.value="";
+function addLink() {
+  const n = lname.value.trim(), u = lurl.value.trim(); if (!n || !u) return;
+  userData.links = userData.links || []; userData.links.push({ name: n, url: u });
+  saveUser(); lname.value = ""; lurl.value = "";
 }
 
 // ================= Giftcode =================
-async function redeem(){
-  const code=gift.value.trim();
-  const snap=await db.ref('giftcodes/'+code).get();
-  if(!snap.exists()){alert("❌ Giftcode không hợp lệ!");return;}
-  const val=snap.val();
-  if(val.used){alert("🚫 Giftcode đã được sử dụng!");return;}
-  userData.balance+=val.amount;
-  await db.ref('users/'+uname).set(userData);
-  await db.ref('giftcodes/'+code+'/used').set(true);
-  alert("🎉 Nạp "+val.amount+" VND thành công!");
-  loadUser();
-  gift.value="";
+async function redeem() {
+  const code = gift.value.trim();
+  const snap = await db.ref('giftcodes/' + code).get();
+  if (!snap.exists()) { alert("❌ Giftcode không hợp lệ!"); return; }
+  const val = snap.val();
+  if (val.used) { alert("🚫 Giftcode đã được sử dụng!"); return; }
+  userData.balance += val.amount;
+  await db.ref('users/' + uname).set(userData);
+  await db.ref('giftcodes/' + code + '/used').set(true);
+  alert("🎉 Nạp " + val.amount + " VND thành công!");
+  loadUser(); gift.value = "";
 }
 
 // ================= Admin Panel =================
-async function createGift(){
-  const code=giftCode.value.trim(); const value=parseInt(giftValue.value);
-  if(!code||!value)return alert("Nhập mã và giá trị hợp lệ!");
-  await db.ref('giftcodes/'+code).set({amount:value,used:false});
+async function createGift() {
+  const code = giftCode.value.trim(); const value = parseInt(giftValue.value);
+  if (!code || !value) return alert("Nhập mã và giá trị hợp lệ!");
+  await db.ref('giftcodes/' + code).set({ amount: value, used: false });
   alert("✅ Tạo giftcode thành công!");
-  giftCode.value=""; giftValue.value="";
+  giftCode.value = ""; giftValue.value = "";
 }
-async function loadUsers(){
-  const snap=await db.ref('users').get();
-  const data=snap.val(); 
-  let html="<tr><th>Tên</th><th>Role</th><th>Balance</th><th>Block</th><th>Action</th></tr>";
-  for(let k in data){
-    const u=data[k];
-    html+=`<tr>
+async function loadUsers() {
+  const snap = await db.ref('users').get();
+  const data = snap.val();
+  let html = "<tr><th>Tên</th><th>Role</th><th>Balance</th><th>Block</th><th>Action</th></tr>";
+  for (let k in data) {
+    const u = data[k];
+    html += `<tr>
       <td>${k}</td><td>${u.role}</td><td>${u.balance}</td>
-      <td>${u.blocked?'🚫':'✅'}</td>
-      <td><button onclick="blockUser('${k}',${!u.blocked})">${u.blocked?'Mở':'Block'}</button></td>
+      <td>${u.blocked ? '🚫' : '✅'}</td>
+      <td><button onclick="blockUser('${k}',${!u.blocked})">${u.blocked ? 'Mở' : 'Block'}</button></td>
     </tr>`;
   }
-  userTable.innerHTML=html;
+  userTable.innerHTML = html;
 }
-async function blockUser(name,state){
-  await db.ref('users/'+name+'/blocked').set(state);
+async function blockUser(name, state) {
+  await db.ref('users/' + name + '/blocked').set(state);
   alert("Đã cập nhật trạng thái!");
   loadUsers();
 }
 
 // ================= Save & Logout =================
-async function saveUser(){
-  await db.ref('users/'+uname).set(userData);
-  loadUser();
-}
-function logout(){localStorage.removeItem('currentUser');location.href="index.html";}
+async function saveUser() { await db.ref('users/' + uname).set(userData); loadUser(); }
+function logout() { localStorage.removeItem('currentUser'); location.href = "index.html"; }
 </script>
 </body>
 </html>
