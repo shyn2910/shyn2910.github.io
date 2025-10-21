@@ -53,8 +53,8 @@ button:hover {
     <option value="user">User</option>
     <option value="admin">Admin</option>
   </select><br>
-  <button onclick="register()">Đăng ký</button>
-  <button onclick="login()">Đăng nhập</button>
+  <button id="btnRegister">Đăng ký</button>
+  <button id="btnLogin">Đăng nhập</button>
   <p id="msg"></p>
 </div>
 
@@ -71,74 +71,81 @@ const firebaseConfig = {
   measurementId: "G-2ZKCQ24770"
 };
 // ==========================================================
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
 
-// 🟢 Đặt biến lên trên để tránh lỗi “Cannot access before initialization”
-const usernameInput = document.getElementById('username');
-const passwordInput = document.getElementById('password');
-const roleInput = document.getElementById('role');
-const msg = document.getElementById('msg');
+window.onload = () => {
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-// ================== Đăng ký ==================
-async function register() {
-  const username = usernameInput.value.trim();
-  const password = passwordInput.value;
-  const role = roleInput.value;
+  // 🟢 Bây giờ DOM đã sẵn sàng, ta có thể lấy phần tử
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+  const roleInput = document.getElementById('role');
+  const msg = document.getElementById('msg');
 
-  if (!username || !password) {
-    msg.textContent = "⚠️ Vui lòng nhập đầy đủ thông tin!";
-    return;
+  // ================== Đăng ký ==================
+  async function register() {
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+    const role = roleInput.value;
+
+    if (!username || !password) {
+      msg.textContent = "⚠️ Vui lòng nhập đầy đủ thông tin!";
+      return;
+    }
+
+    const snap = await db.ref('users/' + username).get();
+    if (snap.exists()) {
+      msg.textContent = "❌ Tên đăng nhập đã tồn tại!";
+      return;
+    }
+
+    await db.ref('users/' + username).set({
+      password,
+      role,
+      balance: 0,
+      blocked: false,
+      todos: [],
+      links: []
+    });
+
+    msg.textContent = "✅ Đăng ký thành công! Giờ bạn có thể đăng nhập.";
   }
 
-  const snap = await db.ref('users/' + username).get();
-  if (snap.exists()) {
-    msg.textContent = "❌ Tên đăng nhập đã tồn tại!";
-    return;
+  // ================== Đăng nhập ==================
+  async function login() {
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!username || !password) {
+      msg.textContent = "⚠️ Vui lòng nhập đủ thông tin!";
+      return;
+    }
+
+    const snap = await db.ref('users/' + username).get();
+    if (!snap.exists()) {
+      msg.textContent = "❌ Tài khoản không tồn tại!";
+      return;
+    }
+
+    const user = snap.val();
+    if (user.password !== password) {
+      msg.textContent = "❌ Sai mật khẩu!";
+      return;
+    }
+    if (user.blocked) {
+      msg.textContent = "🚫 Tài khoản của bạn đã bị khóa!";
+      return;
+    }
+
+    localStorage.setItem('currentUser', username);
+    msg.textContent = "✅ Đăng nhập thành công! Đang chuyển hướng...";
+    setTimeout(() => (location.href = "dashboard.html"), 700);
   }
 
-  await db.ref('users/' + username).set({
-    password,
-    role,
-    balance: 0,
-    blocked: false,
-    todos: [],
-    links: []
-  });
-
-  msg.textContent = "✅ Đăng ký thành công! Giờ bạn có thể đăng nhập.";
-}
-
-// ================== Đăng nhập ==================
-async function login() {
-  const username = usernameInput.value.trim();
-  const password = passwordInput.value;
-
-  if (!username || !password) {
-    msg.textContent = "⚠️ Vui lòng nhập đủ thông tin!";
-    return;
-  }
-
-  const snap = await db.ref('users/' + username).get();
-  if (!snap.exists()) {
-    msg.textContent = "❌ Tài khoản không tồn tại!";
-    return;
-  }
-
-  const user = snap.val();
-  if (user.password !== password) {
-    msg.textContent = "❌ Sai mật khẩu!";
-    return;
-  }
-  if (user.blocked) {
-    msg.textContent = "🚫 Tài khoản của bạn đã bị khóa!";
-    return;
-  }
-
-  localStorage.setItem('currentUser', username);
-  msg.textContent = "✅ Đăng nhập thành công! Đang chuyển hướng...";
-  setTimeout(() => (location.href = "dashboard.html"), 700);
-}
+  // 🟢 Gắn sự kiện sau khi DOM load
+  document.getElementById('btnRegister').onclick = register;
+  document.getElementById('btnLogin').onclick = login;
+};
 </script>
 </body>
 </html>
