@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Caro Online Realtime</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>🎮 CARO ONLINE — REALTIME</h2>
+
+  <p id="balance">Số dư: 0₫</p>
+  <div id="playerInfo"></div>
+  <div id="scoreBoard"></div>
+
+  <input id="giftInput" placeholder="Nhập giftcode">
+  <button id="redeemBtn">Nhận thưởng</button>
+
+  <div id="roomPanel">
+    <input id="roomId" placeholder="Nhập mã phòng hoặc để trống để tạo mới">
+    <button id="joinRoom">Vào / Tạo Phòng</button>
+    <p id="roomInfo"></p>
+  </div>
+
+  <div id="gameArea" style="display:none;">
+    <p id="status">Đang chờ...</p>
+    <button id="startBtn" style="display:none;">Bắt đầu ván</button>
+    <div id="board"></div>
+    <button id="replayBtn" style="display:none;">Chơi lại ván mới</button>
+  </div>
+
+  <button id="logout">Đăng xuất</button>
+
+  <script type="module">
+    import { db, auth, ref, set, get, child, update, onValue, onAuthStateChanged } from "./firebase.js";
+    import { getUserData, updateBalance, redeemGiftcode } from "./wallet.js";
+    import { showFireworks } from "./fireworks.js";
+
+    const boardSize = 15;
+    let board = Array.from({ length: boardSize }, () => Array(boardSize).fill(''));
+    let currentUser = null, currentRoom = null, playerSymbol = null, isMyTurn = false, isHost = false, gameStarted = false;
+    const boardDiv = document.getElementById("board");
+    const status = document.getElementById("status");
+    const startBtn = document.getElementById("startBtn");
+    const replayBtn = document.getElementById("replayBtn");
+
+    const renderBoard = () => {
+      boardDiv.innerHTML = '';
+      for (let i = 0; i < boardSize; i++) {
+        for (let j = 0; j < boardSize; j++) {
+          const c = document.createElement("div");
+          c.className = "cell";
+          c.textContent = board[i][j];
+          c.onclick = () => handleMove(i, j);
+          boardDiv.appendChild(c);
+        }
+      }
+    };
+
+    const handleMove = async (i, j) => {
+      if (!isMyTurn || !gameStarted || board[i][j]) return;
+      board[i][j] = playerSymbol;
+      isMyTurn = false;
+      await update(ref(db, `rooms/${currentRoom}`), { board, turn: playerSymbol === 'X' ? 'O' : 'X' });
+      checkWin();
+    };
+
+    const checkWin = async () => {
+      const win = (symbol) => {
+        for (let i = 0; i < boardSize; i++) {
+          for (let j = 0; j < boardSize; j++) {
+            if (j + 4 < boardSize &&
+              board[i][j] === symbol &&
+              board[i][j + 1] === symbol &&
+              board[i][j + 2] === symbol &&
+              board[i][j + 3] === symbol &&
+              board[i][j + 4] === symbol) return true;
+            if (i + 4 < boardSize &&
+              board[i][j] === symbol &&
+              board[i + 1][j] === symbol &&
+              board[i + 2][j] === symbol &&
+              board[i + 3][j] === symbol &&
+              board[i + 4][j] === symbol) return true;
+            if (i + 4 < boardSize && j + 4 < boardSize &&
+              board[i][j] === symbol &&
+              board[i + 1][j + 1] === symbol &&
+              board[i + 2][j + 2] === symbol &&
+              board[i + 3][j + 3] === symbol &&
+              board[i + 4][j + 4] === symbol) return true;
+            if (i - 4 >= 0 && j + 4 < boardSize &&
+              board[i][j] === symbol &&
+              board[i - 1][j + 1] === symbol &&
+              board[i - 2][j + 2] === symbol &&
+              board[i - 3][j + 3] === symbol &&
+              board[i - 4][j + 4] === symbol) return true;
+          }
+        }
+        return false;
+      };
+
+      if (win(playerSymbol)) {
+        await updateBalance(currentUser.uid, 2000, "Thắng ván Caro");
+        await update(ref(db, `users/${currentUser.uid}/stats`), { wins: (await getUserData(currentUser.uid)).stats.wins + 1 });
+        showFireworks("CHÚC MỪNG!!!", "#0f0");
+        await update(ref(db, `rooms/${currentRoom}`), { status: "ended" });
+      } else if (win(playerSymbol === "X" ? "O" : "X")) {
+        await update(ref(db, `users/${currentUser.uid}/stats`), { losses: (await getUserData(currentUser.uid)).stats.losses + 1 });
+        showFireworks("DONGOK!!!", "#f00");
+        await update(ref(db, `rooms/${currentRoom}`), { status: "ended" });
+      }
+    };
+
+    const joinRoom = async () => {
+      const roomInput = document.getElementById("roomId").value.trim() || Math.random().toString(36).substr(2, 6).toUpperCase();
+      const dbRef = ref(db);
+      const snap = await get(child(dbRef, `rooms/${roomInput}`));
+      const userData = await getUserData(currentUser.uid);
+
+      if (!snap.exists()) {
+        if (userData.balance < 1000) return alert("Không đủ tiền tạo phòng!");
+        await updateBalance(currentUser.uid, -1000, "Tạo phòng Caro");
+        await set(ref(db, `rooms/${roomInput}`), {
+          player1: currentUser.uid,
+          turn: "X",
+          board,
+          status: "waiting"
+        });
+        isHost = true;
+        playerSymbol = "X";
+      } else {
+        const data = snap.val();
+        if (data.player2) return alert("Phòng đã đủ người!");
+        await update(ref(db, `rooms/${roomInput}`), { player2: currentUser.uid, status: "ready" });
+        playerSymbol = "O";
+      }
+
+      currentRoom = roomInput;
+      document.getElementById("gameArea").style.display = "block";
+      renderBoard();
+      watchRoom(currentRoom);
+    };
+
+    const watchRoom = (roomId) => {
+      onValue(ref(db, `rooms/${roomId}`), async (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.val();
+        board = data.board || board;
+        renderBoard();
+
+        const p1 = await getUserData(data.player1);
+        const p2 = data.player2 ? await getUserData(data.player2) : null;
+        document.getElementById("playerInfo").textContent =
+          p2 ? `Bạn: ${playerSymbol === "X" ? p1.username : p2.username} (${playerSymbol}) | Đối thủ: ${playerSymbol === "X" ? p2.username : p1.username}`
+             : `Chờ người chơi khác...`;
+
+        if (data.status === "ready" && isHost) {
+          startBtn.style.display = "inline-block";
+          status.textContent = "👥 Người chơi đã sẵn sàng. Nhấn 'Bắt đầu ván'";
+        } else if (data.status === "playing") {
+          startBtn.style.display = "none";
+          gameStarted = true;
+          replayBtn.style.display = "none";
+          status.textContent = data.turn === playerSymbol ? "🔹 Lượt của bạn!" : "⏳ Chờ đối thủ...";
+          isMyTurn = data.turn === playerSymbol;
+        } else if (data.status === "ended") {
+          gameStarted = false;
+          replayBtn.style.display = "inline-block";
+          status.textContent = "🎯 Ván đã kết thúc.";
+        }
+      });
+    };
+
+    startBtn.onclick = async () => {
+      await update(ref(db, `rooms/${currentRoom}`), { status: "playing" });
+      alert("✅ Ván bắt đầu!");
+    };
+
+    replayBtn.onclick = async () => {
+      await updateBalance(currentUser.uid, -1000, "Chơi lại ván Caro");
+      board = Array.from({ length: boardSize }, () => Array(boardSize).fill(''));
+      await update(ref(db, `rooms/${currentRoom}`), { board, status: "playing" });
+      replayBtn.style.display = "none";
+      alert("🔁 Ván mới bắt đầu!");
+    };
+
+    document.getElementById("joinRoom").onclick = joinRoom;
+    document.getElementById("redeemBtn").onclick = async () => {
+      const code = document.getElementById("giftInput").value.trim().toUpperCase();
+      if (!code) return alert("Nhập giftcode!");
+      const res = await redeemGiftcode(currentUser.uid, code);
+      alert(res.msg);
+    };
+    document.getElementById("logout").onclick = () => {
+      auth.signOut();
+      window.location = "index.html";
+    };
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return window.location = "index.html";
+      currentUser = user;
+      const data = await getUserData(user.uid);
+      document.getElementById("balance").textContent = `Số dư: ${data.balance}₫`;
+      onValue(ref(db, "users/" + user.uid + "/balance"), (snap) => {
+        document.getElementById("balance").textContent = `Số dư: ${snap.val()}₫`;
+      });
+    });
+  </script>
+</body>
+</html>
