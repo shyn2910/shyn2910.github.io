@@ -130,7 +130,7 @@ button:hover {
 
 .common-section, .list-section, .summary {
   width: 90%;
-  margin: 500px auto;
+  margin: 15px auto;
 }
 
 h2 {
@@ -145,14 +145,14 @@ h2 {
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  margin-top: 12px;
+  margin-top: 13px;
 }
 .common-btn {
   background: linear-gradient(45deg, #ff1a75, #ff4d4d);
   box-shadow: 0 0 10px #ff4d4d;
   border-radius: 10px;
   padding: 8px 15px;
-  font-weight: 500;
+  font-weight: 5000;
 }
 
 /* ========== LIST ========== */
@@ -168,7 +168,7 @@ li {
   background: rgba(255, 255, 255, 0.05);
   padding: 10px;
   border-radius: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 li.income { border-left: 4px solid #00ff66; }
 li.expense { border-left: 4px solid #ff4444; }
@@ -201,3 +201,23 @@ footer {
 
 
 
+#commonButtons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 13px;
+  margin-bottom: 15px; /* 🔥 thêm dòng này */
+}
+
+.login-screen input {
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  min-width: 220px;
+  background: #111;
+  color: #fff;
+  box-shadow: 0 0 6px #ff1a1a inset;
+  margin-right: 10px;
+  margin-top: 10px;  /* 🔥 thêm dòng này để tạo khoảng cách */
+}
