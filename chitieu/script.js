@@ -3,7 +3,6 @@
 // Created by ShynMMO ©2025
 // ========================
 
-// Khai báo biến toàn cục
 let currentUser = null;
 
 // ========================
@@ -29,24 +28,24 @@ const commonButtons = document.getElementById("commonButtons");
 mainContent.style.display = "none";
 
 // ========================
-// 🔑 Đăng nhập bằng tên
-// ========================
-enterBtn.addEventListener("click", () => {
-  const username = usernameInput.value.trim();
-  if (!username) return alert("⚠️ Vui lòng nhập tên!");
-  selectUser(username);
-});
-
-// ========================
-// 👤 Chọn người dùng
+// 👤 Chọn người dùng có sẵn
 // ========================
 function selectUser(name) {
   currentUser = name;
   loginScreen.style.display = "none";
   mainContent.style.display = "block";
   loadData(monthSelect.value);
-  renderCommonList(); // tải chi tiêu thường dùng khi vào
+  renderCommonList();
 }
+
+// ========================
+// 🔑 Đăng nhập thủ công
+// ========================
+enterBtn.addEventListener("click", () => {
+  const username = usernameInput.value.trim();
+  if (!username) return alert("⚠️ Vui lòng nhập tên!");
+  selectUser(username);
+});
 
 // ========================
 // ⏰ Lấy thời gian hiện tại
@@ -118,7 +117,6 @@ function loadData(selectedMonth) {
       else income += data.amount;
     });
 
-    // Cập nhật tổng kết
     incomeSpan.textContent = income.toLocaleString();
     expenseSpan.textContent = expense.toLocaleString();
     balanceSpan.textContent = (income - expense).toLocaleString();
@@ -126,16 +124,7 @@ function loadData(selectedMonth) {
 }
 
 // ========================
-// ⚙️ Hàm loadCommon (placeholder)
-// ========================
-function loadCommon() {
-  // Giữ lại cho tương thích các bản cũ
-  console.log("loadCommon() gọi — đã thay bằng renderCommonList().");
-  renderCommonList();
-}
-
-// ========================
-// 💡 Danh sách chi tiêu thường dùng
+// 💡 Chi tiêu thường dùng
 // ========================
 function renderCommonList() {
   if (!currentUser) return;
@@ -147,6 +136,10 @@ function renderCommonList() {
     commonButtons.innerHTML = "";
     snapshot.forEach((child) => {
       const data = child.val();
+
+      const wrapper = document.createElement("div");
+      wrapper.classList.add("commonWrapper");
+
       const btn = document.createElement("button");
       btn.textContent = `${data.name} ${data.amount}`;
       btn.classList.add("commonItem");
@@ -160,7 +153,6 @@ function renderCommonList() {
         });
       };
 
-      // Nút xóa
       const del = document.createElement("span");
       del.textContent = "✖";
       del.classList.add("deleteCommon");
@@ -168,8 +160,6 @@ function renderCommonList() {
         firebase.database().ref(`${refPath}/${child.key}`).remove();
       };
 
-      const wrapper = document.createElement("div");
-      wrapper.classList.add("commonWrapper");
       wrapper.appendChild(btn);
       wrapper.appendChild(del);
       commonButtons.appendChild(wrapper);
@@ -178,7 +168,7 @@ function renderCommonList() {
 }
 
 // ========================
-// 🧾 Thêm chi tiêu thường dùng mới
+// ➕ Thêm chi tiêu thường dùng
 // ========================
 addCommonBtn.addEventListener("click", () => {
   const value = commonInput.value.trim();
@@ -195,6 +185,14 @@ addCommonBtn.addEventListener("click", () => {
 });
 
 // ========================
-// 🔄 Đổi tháng => load lại dữ liệu
+// 🔄 Đổi tháng
 // ========================
 monthSelect.addEventListener("change", () => loadData(monthSelect.value));
+
+// ========================
+// 🧱 LoadCommon tương thích cũ
+// ========================
+function loadCommon() {
+  console.log("loadCommon() gọi — đã thay bằng renderCommonList().");
+  renderCommonList();
+}
