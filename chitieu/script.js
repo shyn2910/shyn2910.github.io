@@ -1,5 +1,14 @@
+// ========================
+// 🔥 SỔ CHI TIÊU FIREBASE v6.1
+// Created by ShynMMO ©2025
+// ========================
+
+// Khai báo biến toàn cục
 let currentUser = null;
 
+// ========================
+// 🧩 Liên kết phần tử HTML
+// ========================
 const loginScreen = document.getElementById("loginScreen");
 const usernameInput = document.getElementById("usernameInput");
 const enterBtn = document.getElementById("enterBtn");
@@ -13,40 +22,51 @@ const incomeSpan = document.getElementById("income");
 const expenseSpan = document.getElementById("expense");
 const balanceSpan = document.getElementById("balance");
 const monthSelect = document.getElementById("monthSelect");
-const commonButtons = document.getElementById("commonButtons");
 const commonInput = document.getElementById("commonInput");
 const addCommonBtn = document.getElementById("addCommonBtn");
+const commonButtons = document.getElementById("commonButtons");
 
 mainContent.style.display = "none";
 
-// Nút đăng nhập bằng nhập tên
+// ========================
+// 🔑 Đăng nhập bằng tên
+// ========================
 enterBtn.addEventListener("click", () => {
   const username = usernameInput.value.trim();
   if (!username) return alert("⚠️ Vui lòng nhập tên!");
   selectUser(username);
 });
 
-// Hàm chọn người dùng nhanh
+// ========================
+// 👤 Chọn người dùng
+// ========================
 function selectUser(name) {
   currentUser = name;
   loginScreen.style.display = "none";
   mainContent.style.display = "block";
   loadData(monthSelect.value);
+  renderCommonList(); // tải chi tiêu thường dùng khi vào
 }
 
-// Lấy thời gian hiện tại
+// ========================
+// ⏰ Lấy thời gian hiện tại
+// ========================
 function getCurrentTime() {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")} ${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
 }
 
-// Firebase ref theo user
+// ========================
+// 💾 Firebase Reference
+// ========================
 function userRef(path) {
   if (!currentUser) return null;
   return firebase.database().ref(`users/${currentUser}/${path}`);
 }
 
-// Thêm chi tiêu
+// ========================
+// ➕ Thêm chi tiêu
+// ========================
 addBtn.addEventListener("click", () => {
   const name = nameInput.value.trim();
   const amount = parseFloat(amountInput.value.trim());
@@ -60,71 +80,121 @@ addBtn.addEventListener("click", () => {
   amountInput.value = "";
 });
 
-// Xóa chi tiêu
+// ========================
+// ❌ Xóa chi tiêu
+// ========================
 function deleteItem(id) {
   userRef("transactions/" + id).remove();
 }
 
-// Tải dữ liệu
+// ========================
+// 📊 Tải dữ liệu chi tiêu
+// ========================
 function loadData(selectedMonth) {
   const dbRef = userRef("transactions");
   if (!dbRef) return;
+
   dbRef.off();
   dbRef.on("value", (snapshot) => {
     list.innerHTML = "";
     let income = 0, expense = 0;
+
     snapshot.forEach((child) => {
       const data = child.val();
       if (data.month !== selectedMonth) return;
+
       const li = document.createElement("li");
-     li.classList.add(data.type);
-    li.innerHTML = `
-      <div>
-        <strong>${data.name}</strong> — ${data.amount.toLocaleString()} ₫
-        <span class="time">${data.time || ""}</span>
-      </div>
-      <button class="deleteBtn" onclick="deleteItem('${child.key}')">✖</button>
-    `;
-    list.appendChild(li);
-    if (data.amount < 0) expense += Math.abs(data.amount);
-    else income += data.amount;
+      li.classList.add(data.type);
+      li.innerHTML = `
+        <div>
+          <strong>${data.name}</strong> — ${data.amount.toLocaleString()} ₫
+          <span class="time">${data.time || ""}</span>
+        </div>
+        <button class="deleteBtn" onclick="deleteItem('${child.key}')">✖</button>
+      `;
+      list.appendChild(li);
+
+      if (data.amount < 0) expense += Math.abs(data.amount);
+      else income += data.amount;
+    });
+
+    // Cập nhật tổng kết
+    incomeSpan.textContent = income.toLocaleString();
+    expenseSpan.textContent = expense.toLocaleString();
+    balanceSpan.textContent = (income - expense).toLocaleString();
   });
-
-  // Cập nhật tổng kết
-  incomeSpan.textContent = income.toLocaleString();
-  expenseSpan.textContent = expense.toLocaleString();
-  balanceSpan.textContent = (income - expense).toLocaleString();
-} // ← đóng hàm loadData() tại đây
-
-// --------------------------------------------------
-// Hàm tải danh sách chi tiêu thường dùng (nếu cần)
-function loadCommon() {
-  console.log("loadCommon() gọi — không làm gì cụ thể (đã thay bằng renderCommonList nếu có).");
-  // Nếu bạn có hàm renderCommonList thì bật dòng dưới:
-  // renderCommonList();
 }
 
-// --------------------------------------------------
-// Thay đổi tháng ⇒ tải lại dữ liệu
-monthSelect.addEventListener("change", () => loadData(monthSelect.value));
+// ========================
+// ⚙️ Hàm loadCommon (placeholder)
+// ========================
+function loadCommon() {
+  // Giữ lại cho tương thích các bản cũ
+  console.log("loadCommon() gọi — đã thay bằng renderCommonList().");
+  renderCommonList();
+}
 
-// --------------------------------------------------
-// Thêm chi tiêu thường dùng
+// ========================
+// 💡 Danh sách chi tiêu thường dùng
+// ========================
+function renderCommonList() {
+  if (!currentUser) return;
+  const refPath = `users/${currentUser}/common`;
+  const dbRef = firebase.database().ref(refPath);
+
+  dbRef.off();
+  dbRef.on("value", (snapshot) => {
+    commonButtons.innerHTML = "";
+    snapshot.forEach((child) => {
+      const data = child.val();
+      const btn = document.createElement("button");
+      btn.textContent = `${data.name} ${data.amount}`;
+      btn.classList.add("commonItem");
+      btn.onclick = () => {
+        userRef("transactions").push({
+          name: data.name,
+          amount: data.amount,
+          type: data.amount < 0 ? "expense" : "income",
+          month: monthSelect.value,
+          time: getCurrentTime()
+        });
+      };
+
+      // Nút xóa
+      const del = document.createElement("span");
+      del.textContent = "✖";
+      del.classList.add("deleteCommon");
+      del.onclick = () => {
+        firebase.database().ref(`${refPath}/${child.key}`).remove();
+      };
+
+      const wrapper = document.createElement("div");
+      wrapper.classList.add("commonWrapper");
+      wrapper.appendChild(btn);
+      wrapper.appendChild(del);
+      commonButtons.appendChild(wrapper);
+    });
+  });
+}
+
+// ========================
+// 🧾 Thêm chi tiêu thường dùng mới
+// ========================
 addCommonBtn.addEventListener("click", () => {
-  const input = document.getElementById("commonInput");
-  const value = input.value.trim();
+  const value = commonInput.value.trim();
   if (!value) return;
 
-  // Tự động nhận biết tên và số tiền từ chuỗi nhập
   const parts = value.split(" ");
   const name = parts.slice(0, -1).join(" ") || "Không rõ";
   const amount = parseInt(parts[parts.length - 1]) || 0;
 
   const refPath = `users/${currentUser}/common`;
-  push(ref(db, refPath), { name, amount });
-  input.value = "";
-  renderCommonList(); // gọi lại để cập nhật danh sách
+  firebase.database().ref(refPath).push({ name, amount });
+  commonInput.value = "";
+  renderCommonList();
 });
 
-
-
+// ========================
+// 🔄 Đổi tháng => load lại dữ liệu
+// ========================
+monthSelect.addEventListener("change", () => loadData(monthSelect.value));
