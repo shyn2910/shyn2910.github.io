@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Notepad Online — Shyn + Firebase</title>
+  <style>
+    :root{
+      --bg:#0b0b0b; --card:#0f0f10; --accent:#ff2e2e; --muted:#9aa0a6;
+    }
+    body{font-family:Inter, system-ui, Arial; background:var(--bg); color:#fff; margin:0; min-height:100vh;
+      display:flex; align-items:center; justify-content:center; padding:28px;}
+    .wrap{width:100%;max-width:920px;}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    h1{font-size:20px;margin:0}
+    .card{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 6px 30px rgba(0,0,0,.6)}
+    textarea{width:100%;min-height:320px;background:#0a0a0a;border:1px solid #222;color:#eee;padding:12px;border-radius:10px;font-size:15px;resize:vertical}
+    .row{display:flex;gap:10px;margin-top:10px;align-items:center}
+    button{background:var(--accent);border:none;color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+    button.secondary{background:#2b2b2b;color:var(--muted)}
+    .linkbox{margin-top:12px;background:#0a0a0a;padding:10px;border-radius:8px;word-break:break-all;display:flex;gap:8px;align-items:center}
+    .small{font-size:13px;color:var(--muted)}
+    .msg{margin-left:8px;color:#9fe39f}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>📝 Notepad chia sẻ — Shyn + Firebase</h1>
+    </header>
+
+    <div class="card">
+      <div class="small">Ghi chú (mọi thay đổi cần bấm "Lưu" để ghi lên server)</div>
+      <textarea id="note" placeholder="Nhập nội dung..." aria-label="notepad"></textarea>
+
+      <div class="row">
+        <button id="saveBtn">💾 Lưu & Lấy link</button>
+        <button id="newBtn" class="secondary">🆕 Tạo notepad mới</button>
+        <button id="copyBtn" class="secondary">📋 Sao chép link</button>
+        <div id="status" class="small" style="margin-left:12px"></div>
+      </div>
+
+      <div id="linkBox" class="linkbox" style="display:none">
+        <div style="flex:1">
+          <div class="small">Link chia sẻ (ai có link cũng xem được):</div>
+          <a id="shareLink" href="#" style="color:var(--accent);font-weight:600"></a>
+        </div>
+        <div id="time" class="small" style="text-align:right"></div>
+      </div>
+
+      <div style="margin-top:10px" class="small">
+        Lưu ý: hãy điền <code>firebaseConfig</code> vào chỗ <strong>REPLACE_WITH_YOUR_CONFIG</strong> trong mã bên dưới
+      </div>
+    </div>
+  </div>
+
+  <!-- DÙNG modular SDK qua CDN. Nếu thay đổi phiên bản, bạn có thể lấy từ hướng dẫn Firebase. -->
+  <!-- Tài liệu tham khảo: cách thêm SDK trên web và Read/Write Realtime DB. -->
+  <script type="module">
+    // ====== BƯỚC BẠN PHẢI LÀM TRƯỚC ======
+    // 1) Tạo Firebase Project → Add Web app → copy config và dán vào biến below.
+    // 2) Tạo Realtime Database và (tạm thời) mở rules test để public đọc/ghi (hoặc tuỳ chỉnh rules).
+    //
+    // Tham khảo: Firebase web setup / Realtime DB read & write. :contentReference[oaicite:3]{index=3}
+
+    // ----- Thay chỗ này bằng config của bạn (lấy từ Firebase console) -----
+const firebaseConfig = {
+  apiKey: "AIzaSyD5sSqWNPeKRI-TYGWaJ2CHJgVhK9NEeRA",
+  authDomain: "shynsuite.firebaseapp.com",
+  databaseURL: "https://shynsuite-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "shynsuite",
+  storageBucket: "shynsuite.firebasestorage.app",
+  messagingSenderId: "555918093845",
+  appId: "1:555918093845:web:30a1bb173ed09e0c9c281c",
+  measurementId: "G-X2CWCT2GWY"
+};
+
+    if (!firebaseConfig.apiKey) {
+      document.getElementById('status').textContent = '⚠️ Chưa cài firebaseConfig. Mở file, dán config từ Firebase Console.';
+    }
+
+    // ----- Import modular SDK (Realtime DB) từ CDN -----
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, set, push, get, child, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    // Init Firebase
+    let app = null;
+    let db = null;
+    try {
+      app = initializeApp(firebaseConfig);
+      db = getDatabase(app);
+    } catch (e) {
+      // nếu config rỗng => firebase init lỗi
+      console.warn('Firebase chưa được cấu hình đúng:', e);
+    }
+
+    // DOM
+    const noteEl = document.getElementById('note');
+    const saveBtn = document.getElementById('saveBtn');
+    const newBtn = document.getElementById('newBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const linkBox = document.getElementById('linkBox');
+    const shareLink = document.getElementById('shareLink');
+    const status = document.getElementById('status');
+    const timeEl = document.getElementById('time');
+
+    // Helper: lấy id từ URL hoặc tạo mới
+    function getNoteIdFromURL() {
+      const p = new URLSearchParams(location.search);
+      return p.get('id');
+    }
+
+    function updateURLWithId(id) {
+      const url = new URL(location.href);
+      url.searchParams.set('id', id);
+      history.replaceState(null, '', url.toString());
+    }
+
+    function nowISO() {
+      return new Date().toISOString();
+    }
+
+    // Tạo note mới: sinh id ngẫu nhiên và clear textarea
+    function createNewNote() {
+      const newid = Math.random().toString(36).slice(2,10);
+      updateURLWithId(newid);
+      noteEl.value = '';
+      linkBox.style.display = 'none';
+      status.textContent = '✨ Notepad mới sẵn sàng (id=' + newid + ')';
+      return newid;
+    }
+
+    // Hiển thị link
+    function showShareLink(id) {
+      const url = new URL(location.href);
+      url.searchParams.set('id', id);
+      shareLink.href = url.toString();
+      shareLink.textContent = url.toString();
+      linkBox.style.display = 'flex';
+      timeEl.textContent = new Date().toLocaleString();
+    }
+
+    // LƯU note lên Firebase Realtime Database:
+    // Cấu trúc DB: /notes/{id} => { content, updatedAt }
+    async function saveNoteToFirebase(id, content) {
+      if (!db) throw new Error('Firebase chưa được cấu hình.');
+      const path = 'notes/' + id;
+      const noteRef = ref(db, path);
+      await set(noteRef, {
+        content: content,
+        updatedAt: nowISO()
+      });
+    }
+
+    // TẢI note từ Firebase (1 lần)
+    async function loadNoteFromFirebase(id) {
+      if (!db) return null;
+      const path = 'notes/' + id;
+      const noteRef = ref(db, path);
+      const snap = await get(noteRef);
+      if (snap && snap.exists()) return snap.val();
+      return null;
+    }
+
+    // Lắng nghe thay đổi realtime (nếu muốn auto-update khi ai đó chỉnh)
+    function watchNoteRealtime(id) {
+      if (!db) return;
+      const path = 'notes/' + id;
+      const noteRef = ref(db, path);
+      onValue(noteRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          // Nếu nội dung khác hẳn với ô nhập hiện tại, cập nhật (không overwrite nếu đang edit)
+          if (noteEl.value !== data.content) {
+            noteEl.value = data.content;
+            status.textContent = '🔁 Nội dung đã cập nhật (realtime)';
+          }
+          timeEl.textContent = new Date(data.updatedAt).toLocaleString();
+          showShareLink(id);
+        }
+      });
+    }
+
+    // Khi bấm LƯU
+    saveBtn.addEventListener('click', async () => {
+      const id = getNoteIdFromURL() || createNewNote();
+      const content = noteEl.value;
+      if (!db) { alert('Firebase chưa cấu hình. Mở file và dán firebaseConfig.'); return; }
+      status.textContent = '⏳ Đang lưu...';
+      try {
+        await saveNoteToFirebase(id, content);
+        status.textContent = '✅ Đã lưu lên Firebase';
+        showShareLink(id);
+        // start watching realtime (so that others edits reflect)
+        watchNoteRealtime(id);
+      } catch (e) {
+        console.error(e);
+        status.textContent = '❌ Lưu thất bại: ' + (e.message || e);
+        alert('Lưu thất bại. Kiểm tra firebaseConfig và rules Realtime Database.');
+      }
+    });
+
+    // Tạo notepad mới
+    newBtn.addEventListener('click', () => {
+      createNewNote();
+    });
+
+    // Copy link
+    copyBtn.addEventListener('click', async () => {
+      const href = shareLink.href;
+      if (!href) { alert('Chưa có link để copy. Hãy lưu trước.'); return; }
+      try {
+        await navigator.clipboard.writeText(href);
+        status.textContent = '📋 Đã copy link';
+      } catch (e) {
+        alert('Trình duyệt không hỗ trợ tính năng copy tự động. Hãy copy thủ công.');
+      }
+    });
+
+    // Khi mở trang: nếu có id trong URL thì load từ Firebase; nếu không thì tạo id mới local
+    (async function init() {
+      const id = getNoteIdFromURL();
+      if (id) {
+        status.textContent = '⏳ Đang tải note từ server...';
+        if (!db) { status.textContent = '⚠️ Firebase chưa cấu hình.'; return; }
+        try {
+          const data = await loadNoteFromFirebase(id);
+          if (data) {
+            noteEl.value = data.content || '';
+            status.textContent = '✅ Đã tải note (id=' + id + ')';
+            showShareLink(id);
+            // Khởi động lắng nghe realtime để tự động cập nhật khi có thay đổi
+            watchNoteRealtime(id);
+          } else {
+            status.textContent = 'ℹ️ Chưa có note tại id này. Bạn có thể nhập nội dung và bấm Lưu.';
+            showShareLink(id);
+          }
+        } catch (e) {
+          console.error(e);
+          status.textContent = '❌ Lỗi khi tải: ' + (e.message||e);
+        }
+      } else {
+        // không có id → tạo mới (mới local, chưa lưu server)
+        createNewNote();
+      }
+    })();
+
+  </script>
+</body>
+</html>
