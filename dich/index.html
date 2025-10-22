@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shyn Translate Pro v2</title>
+<style>
+  body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background: radial-gradient(circle at top, #0d0d0d, #000);
+    color: #fff;
+    text-align: center;
+    padding: 40px 20px;
+  }
+  h1 {
+    color: #ff4444;
+    text-shadow: 0 0 15px #ff0000;
+    margin-bottom: 25px;
+  }
+  .translate-section {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 25px;
+  }
+  .text-box {
+    width: 320px;
+    height: 200px;
+    background: #1a1a1a;
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    padding: 12px;
+    font-size: 15px;
+    resize: none;
+    box-shadow: 0 0 15px #ff000040;
+    transition: all 0.2s ease;
+  }
+  .text-box:focus {
+    outline: 2px solid #ff3333;
+    box-shadow: 0 0 20px #ff000080;
+  }
+  .swap-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .swap-button {
+    background: #ff2e2e;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 0 15px #ff0000;
+    transition: 0.2s;
+  }
+  .swap-button:hover {
+    transform: rotate(180deg);
+    background: #ff4a4a;
+  }
+  .options {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  select, button {
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  button.action {
+    background: #ff2e2e;
+    box-shadow: 0 0 10px #ff0000;
+  }
+  button.action:hover {
+    background: #ff4a4a;
+  }
+  #status {
+    margin-top: 15px;
+    color: #ccc;
+    font-size: 14px;
+  }
+  footer {
+    margin-top: 40px;
+    opacity: 0.7;
+  }
+</style>
+</head>
+<body>
+  <h1>🌍 Shyn Translate Pro v2</h1>
+
+  <div class="translate-section">
+    <textarea id="inputText" class="text-box" placeholder="Nhập văn bản cần dịch..."></textarea>
+
+    <div class="swap-container">
+      <button class="swap-button" onclick="swapLanguages()" title="Hoán đổi">↔️</button>
+    </div>
+
+    <textarea id="outputText" class="text-box" placeholder="Kết quả dịch..." readonly></textarea>
+  </div>
+
+  <div class="options">
+    <span id="detectedLang">Phát hiện: ?</span>
+    <select id="targetLang">
+      <option value="vi">Tiếng Việt</option>
+      <option value="en">Tiếng Anh</option>
+      <option value="ja">Tiếng Nhật</option>
+      <option value="ko">Tiếng Hàn</option>
+      <option value="zh-CN">Tiếng Trung</option>
+      <option value="fr">Tiếng Pháp</option>
+      <option value="de">Tiếng Đức</option>
+      <option value="es">Tiếng Tây Ban Nha</option>
+      <option value="ru">Tiếng Nga</option>
+    </select>
+    <button class="action" onclick="translateText()">🚀 Dịch</button>
+    <button class="action" onclick="copyOutput()">📋 Copy</button>
+  </div>
+
+  <div id="status">Chưa có nội dung dịch.</div>
+
+  <footer>Created by <b>ShynMMO ©2025</b></footer>
+
+<script>
+const langNames = {
+  "en": "Tiếng Anh",
+  "vi": "Tiếng Việt",
+  "ja": "Tiếng Nhật",
+  "ko": "Tiếng Hàn",
+  "zh-CN": "Tiếng Trung",
+  "fr": "Tiếng Pháp",
+  "de": "Tiếng Đức",
+  "es": "Tiếng Tây Ban Nha",
+  "ru": "Tiếng Nga"
+};
+
+let detectedLang = "auto";
+
+async function translateText() {
+  const text = document.getElementById("inputText").value.trim();
+  const targetLang = document.getElementById("targetLang").value;
+  const output = document.getElementById("outputText");
+  const status = document.getElementById("status");
+  const detectDisplay = document.getElementById("detectedLang");
+
+  if (!text) {
+    output.value = "";
+    status.innerText = "⚠️ Vui lòng nhập nội dung cần dịch.";
+    return;
+  }
+
+  output.value = "⏳ Đang dịch...";
+  status.innerText = "Đang xử lý...";
+  
+  try {
+    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`);
+    const data = await res.json();
+    const translatedText = data[0].map(item => item[0]).join('');
+    detectedLang = data[2];
+    output.value = translatedText;
+
+    detectDisplay.innerText = `Phát hiện: ${langNames[detectedLang] || detectedLang}`;
+    status.innerText = `Dịch từ ${langNames[detectedLang] || detectedLang} → ${langNames[targetLang] || targetLang}`;
+  } catch (err) {
+    output.value = "";
+    status.innerText = "❌ Lỗi khi dịch. Hãy thử lại sau.";
+  }
+}
+
+function swapLanguages() {
+  const targetSelect = document.getElementById("targetLang");
+  if (detectedLang === "auto") {
+    alert("⚠️ Chưa phát hiện được ngôn ngữ để hoán đổi!");
+    return;
+  }
+  const temp = targetSelect.value;
+  targetSelect.value = detectedLang;
+  detectedLang = temp;
+
+  // Đổi nội dung 2 ô
+  const input = document.getElementById("inputText");
+  const output = document.getElementById("outputText");
+  const tempText = input.value;
+  input.value = output.value;
+  output.value = tempText;
+
+  document.getElementById("detectedLang").innerText = `Phát hiện: ${langNames[detectedLang] || detectedLang}`;
+  document.getElementById("status").innerText = `Đã hoán đổi ngôn ngữ.`;
+}
+
+function copyOutput() {
+  const text = document.getElementById("outputText").value;
+  if (!text) return alert("⚠️ Không có gì để copy!");
+  navigator.clipboard.writeText(text);
+  alert("✅ Đã copy kết quả vào clipboard!");
+}
+</script>
+</body>
+</html>
