@@ -130,7 +130,7 @@ button:hover {
 
 .common-section, .list-section, .summary {
   width: 90%;
-  margin: 50px auto;
+  margin: 500px auto;
 }
 
 h2 {
@@ -198,5 +198,6 @@ footer {
   text-shadow: 0 0 5px #ff0000;
   margin-top: auto;
 }
+
 
 
