@@ -77,35 +77,54 @@ function loadData(selectedMonth) {
       const data = child.val();
       if (data.month !== selectedMonth) return;
       const li = document.createElement("li");
-      li.classList.add(data.type);
-      li.innerHTML = `
-        <div>
-          <strong>${data.name}</strong> — ${data.amount.toLocaleString()} ₫
-          <span class="time">${data.time || ""}</span>
-        </div>
-        <button class="deleteBtn" onclick="deleteItem('${child.key}')">✖</button>
-      `;
-      list.appendChild(li);
-      if (data.amount < 0) expense += Math.abs(data.amount);
-      else income += data.amount;
-    });
-    incomeSpan.textContent = income.toLocaleString();
-    expenseSpan.textContent = expense.toLocaleString();
-    balanceSpan.textContent = (income - expense).toLocaleString();
+     li.classList.add(data.type);
+    li.innerHTML = `
+      <div>
+        <strong>${data.name}</strong> — ${data.amount.toLocaleString()} ₫
+        <span class="time">${data.time || ""}</span>
+      </div>
+      <button class="deleteBtn" onclick="deleteItem('${child.key}')">✖</button>
+    `;
+    list.appendChild(li);
+    if (data.amount < 0) expense += Math.abs(data.amount);
+    else income += data.amount;
   });
 
-  function loadCommon() {
-  console.log("loadCommon() chạy — chưa có nội dung cụ thể.");
-  // Nếu bạn từng dùng hàm này để tải chi tiêu thường dùng hoặc dữ liệu mẫu,
-  // có thể bổ sung logic tại đây, ví dụ:
+  // Cập nhật tổng kết
+  incomeSpan.textContent = income.toLocaleString();
+  expenseSpan.textContent = expense.toLocaleString();
+  balanceSpan.textContent = (income - expense).toLocaleString();
+} // ← đóng hàm loadData() tại đây
+
+// --------------------------------------------------
+// Hàm tải danh sách chi tiêu thường dùng (nếu cần)
+function loadCommon() {
+  console.log("loadCommon() gọi — không làm gì cụ thể (đã thay bằng renderCommonList nếu có).");
+  // Nếu bạn có hàm renderCommonList thì bật dòng dưới:
   // renderCommonList();
 }
-  loadCommon();
-}
 
-// Thay đổi tháng
+// --------------------------------------------------
+// Thay đổi tháng ⇒ tải lại dữ liệu
 monthSelect.addEventListener("change", () => loadData(monthSelect.value));
 
+// --------------------------------------------------
 // Thêm chi tiêu thường dùng
-addCommonBtn.addEven
+addCommonBtn.addEventListener("click", () => {
+  const input = document.getElementById("commonInput");
+  const value = input.value.trim();
+  if (!value) return;
+
+  // Tự động nhận biết tên và số tiền từ chuỗi nhập
+  const parts = value.split(" ");
+  const name = parts.slice(0, -1).join(" ") || "Không rõ";
+  const amount = parseInt(parts[parts.length - 1]) || 0;
+
+  const refPath = `users/${currentUser}/common`;
+  push(ref(db, refPath), { name, amount });
+  input.value = "";
+  renderCommonList(); // gọi lại để cập nhật danh sách
+});
+
+
 
