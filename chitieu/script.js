@@ -93,6 +93,13 @@ function loadData(selectedMonth) {
     expenseSpan.textContent = expense.toLocaleString();
     balanceSpan.textContent = (income - expense).toLocaleString();
   });
+
+  function loadCommon() {
+  console.log("loadCommon() chạy — chưa có nội dung cụ thể.");
+  // Nếu bạn từng dùng hàm này để tải chi tiêu thường dùng hoặc dữ liệu mẫu,
+  // có thể bổ sung logic tại đây, ví dụ:
+  // renderCommonList();
+}
   loadCommon();
 }
 
@@ -101,3 +108,4 @@ monthSelect.addEventListener("change", () => loadData(monthSelect.value));
 
 // Thêm chi tiêu thường dùng
 addCommonBtn.addEven
+
