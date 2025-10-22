@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sổ Chi Tiêu VIP PRO v6.1</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <!-- Firebase config -->
+  <script src="firebase-config.js"></script>
+
+  <!-- Script chính -->
+  <script defer src="script.js"></script>
+</head>
+
+<body>
+  <header>
+    <h1>💰 SỔ CHI TIÊU FIREBASE v6.1</h1>
+  </header>
+
+  <!-- Màn hình chọn người dùng -->
+  <div id="loginScreen" class="login-screen">
+    <h2>👤 Chọn người dùng hoặc nhập tên mới</h2>
+    <div class="user-buttons">
+      <button class="quickUser" onclick="selectUser('Shyn')">👑 Shyn</button>
+      <button class="quickUser" onclick="selectUser('Padd')">🎮 Padd</button>
+    </div>
+    <p>Hoặc nhập tên khác:</p>
+    <input id="usernameInput" type="text" placeholder="VD: Phúc hoặc Nhi">
+    <button id="enterBtn">Vào sổ</button>
+  </div>
+
+  <!-- Giao diện chính -->
+  <main id="mainContent">
+    <section class="month-select">
+      <label for="monthSelect">📆 Chọn tháng:</label>
+      <select id="monthSelect">
+        <option value="11/25">11/25</option>
+        <option value="12/25">12/25</option>
+        <option value="01/26">01/26</option>
+        <option value="02/26">02/26</option>
+        <option value="03/26">03/26</option>
+        <option value="04/26">04/26</option>
+        <option value="05/26">05/26</option>
+        <option value="06/26">06/26</option>
+        <option value="07/26">07/26</option>
+        <option value="08/26">08/26</option>
+        <option value="09/26">09/26</option>
+        <option value="10/26">10/26</option>
+        <option value="11/26">11/26</option>
+        <option value="12/26">12/26</option>
+      </select>
+    </section>
+
+    <section class="input-section">
+      <input id="itemName" type="text" placeholder="Tên mục (VD: Ăn sáng)" />
+      <input id="itemAmount" type="number" placeholder="Số tiền (VD: 20000 hoặc -15000)" />
+      <button id="addBtn">➕ Thêm</button>
+    </section>
+
+    <section class="common-section">
+      <h2>⚡ Chi tiêu thường dùng</h2>
+      <div id="commonButtons"></div>
+      <div class="add-common">
+        <input id="commonInput" type="text" placeholder="VD: Cà phê 25000" />
+        <button id="addCommonBtn">Thêm mục thường dùng</button>
+      </div>
+    </section>
+
+    <section class="list-section">
+      <h2>📜 Danh sách chi tiêu</h2>
+      <ul id="expenseList"></ul>
+    </section>
+
+    <section class="summary">
+      <h2>📊 Tổng kết</h2>
+      <p>Thu nhập: <span id="income">0</span> ₫</p>
+      <p>Chi tiêu: <span id="expense">0</span> ₫</p>
+      <p>Số dư: <span id="balance">0</span> ₫</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Created by <strong>ShynMMO ©2025</strong></p>
+  </footer>
+</body>
+</html>
