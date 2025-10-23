@@ -2,140 +2,90 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>ShynChat Admin Panel 💻</title>
-
-<!-- Firebase SDK -->
+<title>Admin Panel | Shyn Admin!</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-database-compat.js"></script>
 <style>
-  body {
-    background: #0b0b0b;
-    color: #fff;
-    font-family: 'Be Vietnam Pro', sans-serif;
-    padding: 20px;
-  }
-  h2 {
-    color: #ff2e2e;
-    text-shadow: 0 0 15px #ff0000;
-    margin-bottom: 20px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #151515;
-    border-radius: 8px;
-    box-shadow: 0 0 15px #ff2e2e55;
-    overflow: hidden;
-  }
-  th, td {
-    padding: 10px;
-    border-bottom: 1px solid #333;
-    text-align: left;
-  }
-  th {
-    background: #222;
-    color: #ff2e2e;
-  }
-  tr:hover {
-    background: #1f1f1f;
-  }
-  button {
-    background: #ff2e2e;
-    border: none;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  button:hover {
-    background: #ff5555;
-  }
-  #user-count {
-    margin-bottom: 10px;
-  }
+body {background:#0a0a0a;color:#fff;font-family:'Be Vietnam Pro',sans-serif;padding:20px;}
+table{width:100%;border-collapse:collapse;}
+td,th{padding:8px;border-bottom:1px solid #333;}
+th{color:#ff2e2e;}button{background:#ff2e2e;border:none;padding:6px 10px;color:#fff;cursor:pointer;}
+#login{margin-top:50px;}
 </style>
 </head>
 <body>
 
-<h2>🧩 ShynChat Admin Panel</h2>
-<div id="user-count">Đang tải danh sách...</div>
-<table id="userTable">
-  <tr>
-    <th>Tên</th>
-    <th>Email</th>
-    <th>Trạng thái</th>
-    <th>Hành động</th>
-  </tr>
-</table>
+<h2>🧩 ShynChat Admin Panel!</h2>
+<div id="login"><button id="loginBtn">Đăng nhập bằng Google</button></div>
+<div id="content" style="display:none;">
+  <h3>Danh sách người dùng</h3>
+  <table id="userTable">
+    <tr><th>Tên</th><th>Email</th><th>Online</th><th>Hành động</th></tr>
+  </table>
+</div>
 
 <script>
-// ========================
-// Firebase Configuration
-// ========================
-const firebaseConfig = {
-  apiKey: "AIzaSyDs3VrMSUnb7kl0MWYbMxnqR78anJ2SgJs",
-  authDomain: "shynchat.firebaseapp.com",
-  databaseURL: "https://shynchat-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "shynchat",
-  storageBucket: "shynchat.firebasestorage.app",
-  messagingSenderId: "180611398927",
-  appId: "1:180611398927:web:2566534da0f8f6935f927a",
-  measurementId: "G-8876T182RZ"
+const firebaseConfig={
+  apiKey:"AIzaSyDs3VrMSUnb7kl0MWYbMxnqR78anJ2SgJs",
+  authDomain:"shynchat.firebaseapp.com",
+  databaseURL:"https://shynchat-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"shynchat",
+  storageBucket:"shynchat.firebasestorage.app",
+  messagingSenderId:"180611398927",
+  appId:"1:180611398927:web:2566534da0f8f6935f927a"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const auth=firebase.auth();
+const db=firebase.database();
+const provider=new firebase.auth.GoogleAuthProvider();
 
-// ========================
-// Load User List
-// ========================
-const userTable = document.getElementById("userTable");
-const userCount = document.getElementById("user-count");
+const loginBtn=document.getElementById("loginBtn");
+const loginDiv=document.getElementById("login");
+const contentDiv=document.getElementById("content");
+const table=document.getElementById("userTable");
 
-db.ref("users").on("value", snapshot => {
-  const data = snapshot.val();
-  userTable.innerHTML = `
-    <tr>
-      <th>Tên</th>
-      <th>Email</th>
-      <th>Trạng thái</th>
-      <th>Hành động</th>
-    </tr>
-  `;
+let isAdmin=false;
+const adminEmail="pn23070999@gmail.com";
 
-  let count = 0;
-  for (const key in data) {
-    const user = data[key];
-    if (!user) continue;
-    count++;
+loginBtn.onclick=()=>auth.signInWithPopup(provider);
 
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${user.name || "(Không tên)"}</td>
-      <td>${user.email || "(Không email)"}</td>
-      <td>${user.online ? "🟢 Online" : "🔴 Offline"}</td>
-      <td>
-        <button onclick="banUser('${key}')">Ban</button>
-      </td>
-    `;
-    userTable.appendChild(row);
+auth.onAuthStateChanged(user=>{
+  if(user){
+    if(user.email===adminEmail){
+      isAdmin=true;
+      loginDiv.style.display="none";
+      contentDiv.style.display="block";
+      loadUsers();
+    }else{
+      alert("Truy cập bị từ chối! Tài khoản này không có quyền quản trị.");
+      auth.signOut();
+      window.location.href="index.html";
+    }
   }
-
-  userCount.textContent = `Tổng số người dùng: ${count}`;
 });
 
-// ========================
-// Ban user (Admin quyền xóa user)
-// ========================
-function banUser(uid) {
-  const confirmBan = confirm("Bạn có chắc muốn cấm người dùng này?");
-  if (!confirmBan) return;
-  db.ref("users/" + uid).remove()
-    .then(() => alert("Đã cấm người dùng!"))
-    .catch(err => alert("Lỗi: " + err.message));
+function loadUsers(){
+  db.ref("users").on("value",snap=>{
+    table.innerHTML="<tr><th>Tên</th><th>Email</th><th>Online</th><th>Hành động</th></tr>";
+    snap.forEach(c=>{
+      const u=c.val();
+      const tr=document.createElement("tr");
+      tr.innerHTML=`
+        <td>${u.name||"(Không tên)"}</td>
+        <td>${u.email||"(Không email)"}</td>
+        <td>${u.online?"🟢":"🔴"}</td>
+        <td><button onclick="banUser('${c.key}')">Ban</button></td>`;
+      table.appendChild(tr);
+    });
+  });
+}
+
+function banUser(uid){
+  if(!isAdmin)return alert("Không có quyền.");
+  if(confirm("Bạn có chắc muốn cấm người dùng này?"))
+    db.ref("users/"+uid).remove();
 }
 </script>
-
 </body>
 </html>
