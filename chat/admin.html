@@ -2,90 +2,56 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel | Shyn Admin!</title>
+<title>Admin Panel | ShynChat Secure v4.3</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-database-compat.js"></script>
 <style>
-body {background:#0a0a0a;color:#fff;font-family:'Be Vietnam Pro',sans-serif;padding:20px;}
+body{background:#0a0a0a;color:#fff;font-family:'Be Vietnam Pro',sans-serif;padding:20px;}
 table{width:100%;border-collapse:collapse;}
-td,th{padding:8px;border-bottom:1px solid #333;}
-th{color:#ff2e2e;}button{background:#ff2e2e;border:none;padding:6px 10px;color:#fff;cursor:pointer;}
-#login{margin-top:50px;}
+th,td{padding:8px;border-bottom:1px solid #333;}
+th{color:#ff2e2e;}
+button{background:#ff2e2e;border:none;padding:5px 10px;color:#fff;border-radius:6px;cursor:pointer;}
 </style>
 </head>
 <body>
-
-<h2>🧩 ShynChat Admin Panel!</h2>
-<div id="login"><button id="loginBtn">Đăng nhập bằng Google</button></div>
+<h2>🧩 ShynChat Admin Panel v4.3</h2>
+<div id="login"><button id="loginBtn">Đăng nhập Google</button></div>
 <div id="content" style="display:none;">
-  <h3>Danh sách người dùng</h3>
-  <table id="userTable">
-    <tr><th>Tên</th><th>Email</th><th>Online</th><th>Hành động</th></tr>
-  </table>
+ <h3>Danh sách người dùng</h3>
+ <table id="tbl"><tr><th>Tên</th><th>Email</th><th>Online</th><th>Hành động</th></tr></table>
 </div>
-
 <script>
-const firebaseConfig={
-  apiKey:"AIzaSyDs3VrMSUnb7kl0MWYbMxnqR78anJ2SgJs",
-  authDomain:"shynchat.firebaseapp.com",
-  databaseURL:"https://shynchat-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:"shynchat",
-  storageBucket:"shynchat.firebasestorage.app",
-  messagingSenderId:"180611398927",
-  appId:"1:180611398927:web:2566534da0f8f6935f927a"
-};
+const firebaseConfig={apiKey:"AIzaSyDs3VrMSUnb7kl0MWYbMxnqR78anJ2SgJs",
+authDomain:"shynchat.firebaseapp.com",
+databaseURL:"https://shynchat-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId:"shynchat",storageBucket:"shynchat.firebasestorage.app",
+messagingSenderId:"180611398927",appId:"1:180611398927:web:2566534da0f8f6935f927a"};
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.database();
-const provider=new firebase.auth.GoogleAuthProvider();
-
-const loginBtn=document.getElementById("loginBtn");
-const loginDiv=document.getElementById("login");
-const contentDiv=document.getElementById("content");
-const table=document.getElementById("userTable");
-
-let isAdmin=false;
+const auth=firebase.auth(),db=firebase.database(),provider=new firebase.auth.GoogleAuthProvider();
 const adminEmail="pn23070999@gmail.com";
+const loginBtn=document.getElementById("loginBtn"),loginDiv=document.getElementById("login"),
+content=document.getElementById("content"),tbl=document.getElementById("tbl");
 
 loginBtn.onclick=()=>auth.signInWithPopup(provider);
-
-auth.onAuthStateChanged(user=>{
-  if(user){
-    if(user.email===adminEmail){
-      isAdmin=true;
-      loginDiv.style.display="none";
-      contentDiv.style.display="block";
-      loadUsers();
-    }else{
-      alert("Truy cập bị từ chối! Tài khoản này không có quyền quản trị.");
-      auth.signOut();
-      window.location.href="index.html";
-    }
-  }
-});
-
-function loadUsers(){
-  db.ref("users").on("value",snap=>{
-    table.innerHTML="<tr><th>Tên</th><th>Email</th><th>Online</th><th>Hành động</th></tr>";
-    snap.forEach(c=>{
-      const u=c.val();
-      const tr=document.createElement("tr");
-      tr.innerHTML=`
-        <td>${u.name||"(Không tên)"}</td>
-        <td>${u.email||"(Không email)"}</td>
-        <td>${u.online?"🟢":"🔴"}</td>
-        <td><button onclick="banUser('${c.key}')">Ban</button></td>`;
-      table.appendChild(tr);
-    });
+auth.onAuthStateChanged(u=>{
+ if(!u)return;
+ if(u.email!==adminEmail){
+  alert("Truy cập bị từ chối!");auth.signOut();location.href="index.html";return;
+ }
+ loginDiv.style.display="none";content.style.display="block";
+ db.ref("users").on("value",s=>{
+  tbl.innerHTML="<tr><th>Tên</th><th>Email</th><th>Online</th><th>Hành động</th></tr>";
+  s.forEach(c=>{
+   const u=c.val(),tr=document.createElement("tr");
+   tr.innerHTML=`<td>${u.name||""}</td><td>${u.email||""}</td>
+   <td>${u.online?"🟢":"🔴"}</td>
+   <td><button onclick="ban('${c.key}')">Ban</button></td>`;
+   tbl.appendChild(tr);
   });
-}
-
-function banUser(uid){
-  if(!isAdmin)return alert("Không có quyền.");
-  if(confirm("Bạn có chắc muốn cấm người dùng này?"))
-    db.ref("users/"+uid).remove();
-}
+ });
+});
+function ban(id){if(confirm("Cấm user này?"))db.ref("users/"+id).remove();}
 </script>
 </body>
 </html>
