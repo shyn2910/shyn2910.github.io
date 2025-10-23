@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💬 ShynChat Pro v6.0 | ShynSuite</title>
+<title>💬 ShynChat Pro v6.1 | ShynSuite</title>
+<link rel="icon" href="data:,">
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
@@ -140,7 +141,7 @@ footer {
 </head>
 <body>
 
-<header>💬 ShynChat Pro v6.0 | ShynSuite</header>
+<header>💬 ShynChat Pro v6.1 | ShynSuite</header>
 
 <div id="loginDiv">
   <button id="loginBtn">Đăng nhập bằng Google</button>
@@ -218,24 +219,27 @@ auth.onAuthStateChanged(user => {
   currentUser = user;
   loginDiv.style.display = "none";
   chatBox.style.display = "block";
-  displayName.textContent = user.displayName;
+  displayName.textContent = user.displayName || "Không tên";
 
-  // Ghi nhận người dùng online
+  console.log("🔥 Đã đăng nhập:", user.displayName, "| Email:", user.email);
+
   db.ref("users/" + user.uid).update({
-    name: user.displayName,
-    email: user.email,
+    name: user.displayName || "Không tên",
+    email: user.email || "Không rõ",
     online: true
   });
 
   loadMessages();
 
-  // Nếu là Admin
-  if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+  // ✅ Fix lỗi null email + check admin
+  if (user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
     adminBtn.style.display = "inline";
     adminBtn.onclick = () => {
       adminPanel.style.display = adminPanel.style.display === "block" ? "none" : "block";
     };
     loadAdminPanel();
+  } else {
+    console.log("🚫 Không phải Admin:", user.email);
   }
 });
 
