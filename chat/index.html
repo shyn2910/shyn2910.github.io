@@ -2,57 +2,25 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>ShynChat Pro v4.2 💬 | ShynSuite</title>
+<title>ShynChat Pro v4.4 💬 | ShynSuite</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-storage-compat.js"></script>
 
 <style>
-:root {
-  --bg: #0a0a0a;
-  --text: #fff;
-  --msg: #1b1b1b;
-  --accent: #ff2e2e;
-}
-body.light {--bg:#f5f5f5;--text:#111;--msg:#fff;--accent:#ff5555;}
-body {
-  font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--text);
-  display:flex;flex-direction:column;align-items:center;text-align:center;margin:0;
-  transition:background .3s,color .3s;
-}
-h2{margin-top:20px;color:var(--accent);text-shadow:0 0 15px var(--accent);}
-#chat-container{
-  display:none;width:90%;max-width:700px;border:1px solid var(--accent);
-  border-radius:10px;box-shadow:0 0 25px var(--accent);margin-top:20px;
-  padding:15px;background:var(--msg);
-}
-#chat-box{
-  height:55vh;overflow-y:auto;padding:10px;border-radius:8px;background:var(--bg);
-  box-shadow:inset 0 0 10px var(--accent);
-}
-.msg{margin:8px 0;background:var(--msg);padding:10px;border-radius:8px;text-align:left;}
-.msg:hover{background:rgba(255,255,255,0.08);}
-.msg img{max-width:160px;border-radius:6px;margin-top:4px;}
-.user{font-weight:bold;color:var(--accent);cursor:pointer;}
-.time{font-size:.75em;opacity:.7;}
-#typing{font-style:italic;color:#aaa;margin:4px 0;height:20px;}
-#online-users{margin:10px 0;padding:10px;background:var(--bg);border-radius:8px;}
-textarea{width:90%;background:var(--msg);color:var(--text);
-  border-radius:6px;border:1px solid var(--accent);padding:8px;}
-button{background:var(--accent);border:none;color:#fff;padding:6px 12px;margin:5px;
-  border-radius:6px;cursor:pointer;}
-#theme-toggle{position:fixed;top:10px;right:10px;cursor:pointer;}
-#room-label{margin-bottom:10px;font-weight:bold;text-transform:uppercase;
-  color:var(--accent);text-shadow:0 0 10px var(--accent);}
+  body { font-family: 'Be Vietnam Pro', sans-serif; background: #0a0a0a; color: #fff; text-align: center; }
+  #chat-container { display: none; margin-top: 20px; background: #111; border-radius: 10px; width: 90%; max-width: 700px; padding: 20px; box-shadow: 0 0 20px #ff2e2e; }
+  .msg { background: #1b1b1b; margin: 6px; padding: 8px; border-radius: 8px; text-align: left; }
+  .user { font-weight: bold; color: #ff2e2e; }
+  .time { font-size: 0.75em; opacity: 0.7; }
+  textarea { width: 90%; height: 60px; background: #222; color: white; border-radius: 8px; border: 1px solid #ff2e2e; }
 </style>
 </head>
 <body>
 
-<h2>💬 ShynChat Pro v4.1 | ShynSuite</h2>
-<button id="theme-toggle">🌙</button>
-
-<div id="login-section"><button id="googleLogin">Đăng nhập bằng Google</button></div>
+<h2>🔥 ShynChat Pro v4.4 | ShynSuite</h2>
+<button id="googleLogin">Đăng nhập bằng Google</button>
 
 <div id="chat-container">
   <div id="user-info"></div>
@@ -60,13 +28,11 @@ button{background:var(--accent);border:none;color:#fff;padding:6px 12px;margin:5
   <div id="online-users"></div>
   <div id="chat-box"></div>
   <div id="typing"></div>
-  <textarea id="message" placeholder="Nhập tin nhắn... (Enter = gửi, Shift+Enter = xuống dòng)"></textarea><br>
+  <textarea id="message" placeholder="Nhập tin nhắn..."></textarea><br>
   <input type="file" id="imageInput" accept="image/*">
   <button onclick="sendMessage()">Gửi</button>
   <button onclick="logout()">Đăng xuất</button>
 </div>
-
-<audio id="notifSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg"></audio>
 
 <script>
 const firebaseConfig = {
@@ -83,101 +49,100 @@ firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),db=firebase.database(),storage=firebase.storage();
 const provider=new firebase.auth.GoogleAuthProvider();
 
-const gLogin=document.getElementById("googleLogin"),
-      loginSec=document.getElementById("login-section"),
-      chat=document.getElementById("chat-container"),
-      box=document.getElementById("chat-box"),
-      msg=document.getElementById("message"),
-      imgInput=document.getElementById("imageInput"),
-      typing=document.getElementById("typing"),
-      users=document.getElementById("online-users"),
-      info=document.getElementById("user-info"),
-      sound=document.getElementById("notifSound"),
-      roomLbl=document.getElementById("room-label"),
-      themeBtn=document.getElementById("theme-toggle");
+const gLogin=document.getElementById("googleLogin");
+const chatBox=document.getElementById("chat-box");
+const msg=document.getElementById("message");
+const typing=document.getElementById("typing");
+const users=document.getElementById("online-users");
+const chatContainer=document.getElementById("chat-container");
+const imageInput=document.getElementById("imageInput");
 
-let currentUser=null,currentRoom="public",isAdmin=false;
+let currentUser=null;
+let currentRoom="public";
+let typingTimeout=null;
 
+// === Đăng nhập ===
 gLogin.onclick=()=>auth.signInWithPopup(provider);
 auth.onAuthStateChanged(user=>{
   if(user){
     currentUser=user;
-    isAdmin=(user.email==="pn23070999@gmail.com");
-    loginSec.style.display="none";chat.style.display="block";
-    info.innerHTML=`<img src="${user.photoURL}" width="40" style="border-radius:50%"> ${user.displayName}`+
-      (isAdmin?" <span style='color:#ff2e2e'>(Admin)</span>":"");
-    roomLbl.textContent="PHÒNG CHUNG";
-    joinPublic();
-  }else{loginSec.style.display="block";chat.style.display="none";}
+    gLogin.style.display="none";
+    chatContainer.style.display="block";
+    setOnline(true);
+    loadUsers();
+    loadMessages();
+    setupTyping();
+  }
 });
 
-function joinPublic(){
-  currentRoom="public";
-  setOnline(currentUser.uid,currentUser.displayName,currentUser.email);
-  loadUsers();loadMsgs();typingListen();
+// === Theo dõi Online ===
+function setOnline(state){
+  const ref=db.ref("users/"+currentUser.uid);
+  ref.update({name:currentUser.displayName,email:currentUser.email,online:state,lastActive:Date.now()});
+  window.addEventListener("beforeunload",()=>ref.update({online:false,lastActive:Date.now()}));
+  ref.onDisconnect().update({online:false,lastActive:Date.now()});
 }
-function logout(){auth.signOut();}
-function setOnline(uid,name,email){
-  const ref=db.ref("users/"+uid);
-  ref.set({name,email,online:true});
-  ref.onDisconnect().update({online:false});
+function logout(){
+  setOnline(false);
+  auth.signOut();
+  location.reload();
 }
+
+// === Hiển thị danh sách online ===
 function loadUsers(){
   db.ref("users").on("value",snap=>{
-    users.innerHTML="<b>🟢 Đang online:</b><br>";
+    users.innerHTML="<b>🟢 Online:</b><br>";
     snap.forEach(c=>{
-      const u=c.val();const d=document.createElement("div");
+      const u=c.val();
       if(!u.name)return;
-      d.textContent=u.name+(u.online?" 🟢":" 🔴");
-      d.className="user";
-      d.oncontextmenu=e=>{
-        e.preventDefault();
-        const act=prompt("Chọn hành động: Chat / Ban");
-        if(act?.toLowerCase()==="chat") startPrivate(u.name);
-        if(act?.toLowerCase()==="ban"&&isAdmin) db.ref("users/"+c.key).remove();
-      };
-      users.appendChild(d);
+      const div=document.createElement("div");
+      div.textContent=u.name+(u.online?" 🟢":" 🔴");
+      users.appendChild(div);
     });
   });
 }
-function loadMsgs(){
-  box.innerHTML="";db.ref("rooms/"+currentRoom).off();
-  db.ref("rooms/"+currentRoom).on("child_added",s=>{
-    const d=s.val();const div=document.createElement("div");
+
+// === Tin nhắn ===
+function loadMessages(){
+  db.ref("rooms/public").on("child_added",s=>{
+    const d=s.val();
+    const div=document.createElement("div");
     div.className="msg";
     div.innerHTML=`<span class="user">${d.userName}</span>: ${d.text||""}
-      ${d.imageUrl?`<img src="${d.imageUrl}">`:""}
+      ${d.imageUrl?`<br><img src="${d.imageUrl}" width="150">`:""}
       <div class="time">${new Date(d.time).toLocaleTimeString()}</div>`;
-    div.ondblclick=()=>div.innerHTML+=" 😊";
-    div.oncontextmenu=e=>{
-      e.preventDefault();
-      if(isAdmin&&confirm("Xóa tin nhắn này?"))
-        db.ref("rooms/"+currentRoom+"/"+s.key).remove();
-    };
-    box.appendChild(div);box.scrollTop=box.scrollHeight;
-    if(d.userEmail!==currentUser.email) sound.play();
+    chatBox.appendChild(div);
+    chatBox.scrollTop=chatBox.scrollHeight;
   });
 }
+
+// === Gửi tin ===
 async function sendMessage(){
-  const text=msg.value.trim(),file=imgInput.files[0];
+  const text=msg.value.trim();
+  const file=imageInput.files[0];
   if(!text&&!file)return;
   let imageUrl=null;
   if(file){
     const ref=storage.ref("chatImages/"+Date.now()+"_"+file.name);
-    await ref.put(file);imageUrl=await ref.getDownloadURL();imgInput.value="";
+    await ref.put(file);imageUrl=await ref.getDownloadURL();
+    imageInput.value="";
   }
-  db.ref("rooms/"+currentRoom).push({
-    userName:currentUser.displayName,userEmail:currentUser.email,
-    text,imageUrl,time:Date.now()
+  db.ref("rooms/public").push({
+    userName:currentUser.displayName,userEmail:currentUser.email,text,imageUrl,time:Date.now()
   });
-  msg.value="";db.ref("typing/"+currentRoom+"/"+currentUser.uid).remove();
+  msg.value="";
+  db.ref("typing/public/"+currentUser.uid).remove();
 }
-msg.addEventListener("keydown",e=>{
-  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}
-  else db.ref("typing/"+currentRoom+"/"+currentUser.uid).set(currentUser.displayName);
+
+// === Typing Indicator ===
+msg.addEventListener("input",()=>{
+  db.ref("typing/public/"+currentUser.uid).set(currentUser.displayName);
+  clearTimeout(typingTimeout);
+  typingTimeout=setTimeout(()=>db.ref("typing/public/"+currentUser.uid).remove(),3000);
 });
-function typingListen(){
-  db.ref("typing/"+currentRoom).on("value",snap=>{
+
+function setupTyping(){
+  db.ref("typing/public").on("value",snap=>{
     const val=snap.val();
     if(val){
       const names=Object.values(val).filter(n=>n!==currentUser.displayName);
@@ -185,15 +150,6 @@ function typingListen(){
     }else typing.textContent="";
   });
 }
-function startPrivate(target){
-  if(target===currentUser.displayName)return;
-  currentRoom=`private_${[currentUser.displayName,target].sort().join("_")}`;
-  roomLbl.textContent="PHÒNG RIÊNG: "+target;
-  loadMsgs();typingListen();
-}
-let dark=true;
-themeBtn.onclick=()=>{dark=!dark;document.body.classList.toggle("light",!dark);
-  themeBtn.textContent=dark?"🌙":"☀️";};
 </script>
 </body>
 </html>
