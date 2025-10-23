@@ -1,173 +1,117 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💬 ShynChat Pro v6.1 | ShynSuite</title>
-<link rel="icon" href="data:,">
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-database-compat.js"></script>
-
-<style>
-body {
-  font-family: 'Be Vietnam Pro', sans-serif;
-  background: radial-gradient(circle at top, #0d0d0d, #000);
-  color: #fff;
-  text-align: center;
-  margin: 0;
-  padding: 0;
-}
-header {
-  padding: 15px;
-  color: #ff2e2e;
-  text-shadow: 0 0 15px #ff0000, 0 0 30px #ff2e2e;
-  font-size: 1.5em;
-}
-#chatBox {
-  width: 85%;
-  max-width: 800px;
-  margin: 20px auto;
-  background: #111;
-  border-radius: 12px;
-  box-shadow: 0 0 25px #ff2e2e55;
-  padding: 10px;
-}
-#messages {
-  height: 420px;
-  overflow-y: auto;
-  background: #000;
-  border-radius: 10px;
-  border: 1px solid #222;
-  text-align: left;
-  padding: 10px;
-}
-.message {
-  margin-bottom: 10px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  background: #1a1a1a;
-}
-.sender {
-  color: #ff2e2e;
-  font-weight: bold;
-}
-#inputArea {
-  margin-top: 10px;
-}
-#messageInput {
-  width: 65%;
-  padding: 8px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-}
-button {
-  background: #ff2e2e;
-  border: none;
-  color: white;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.2s;
-  margin-left: 5px;
-}
-button:hover {
-  background: #ff5555;
-  box-shadow: 0 0 10px #ff2e2e;
-}
-#userName {
-  margin-bottom: 10px;
-  font-weight: 600;
-  color: #ff2e2e;
-  text-shadow: 0 0 8px #ff0000;
-}
-#adminBtn {
-  background: none;
-  border: none;
-  color: #ff2e2e;
-  font-size: 1.3em;
-  cursor: pointer;
-  margin-left: 5px;
-  text-shadow: 0 0 10px #ff0000;
-  display: none;
-}
-#adminBtn:hover {
-  transform: scale(1.2);
-  color: #ff5555;
-}
-#adminPanel {
-  display: none;
-  position: absolute;
-  right: 30px;
-  top: 90px;
-  background: rgba(20, 0, 0, 0.9);
-  border: 1px solid #ff2e2e66;
-  border-radius: 10px;
-  box-shadow: 0 0 15px #ff000066;
-  padding: 10px;
-  width: 260px;
-  text-align: left;
-  z-index: 999;
-}
-#adminPanel h3 {
-  margin: 0 0 5px;
-  color: #ff2e2e;
-  text-shadow: 0 0 10px #ff0000;
-  font-size: 1em;
-}
-#adminPanel button {
-  background: #ff2e2e;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 10px;
-  margin-top: 6px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-#adminPanel button:hover {
-  background: #ff5555;
-  box-shadow: 0 0 10px #ff2e2e;
-}
-footer {
-  margin-top: 20px;
-  opacity: 0.6;
-  font-size: 0.9em;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShynChat Pro v7.0 | ShynSuite</title>
+  <link rel="icon" href="data:,">
+  <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-database-compat.js"></script>
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      background: radial-gradient(circle at top, #0d0d0d, #000);
+      color: #fff;
+      text-align: center;
+      margin: 0;
+    }
+    header {
+      padding: 15px;
+      color: #ff2e2e;
+      text-shadow: 0 0 15px #ff0000, 0 0 30px #ff2e2e;
+      font-size: 1.5em;
+    }
+    #loginDiv {
+      margin-top: 100px;
+    }
+    input {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      width: 260px;
+      background: #111;
+      color: #fff;
+    }
+    button {
+      background: #ff2e2e;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #ff5555;
+      box-shadow: 0 0 10px #ff2e2e;
+    }
+    #chatBox {
+      display: none;
+      width: 85%;
+      max-width: 800px;
+      margin: 20px auto;
+      background: #111;
+      border-radius: 12px;
+      box-shadow: 0 0 25px #ff2e2e55;
+      padding: 10px;
+    }
+    #messages {
+      height: 420px;
+      overflow-y: auto;
+      background: #000;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: left;
+    }
+    .message {
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: #1a1a1a;
+    }
+    .sender { color: #ff2e2e; font-weight: bold; }
+    #adminBtn { background:none;border:none;color:#ff2e2e;font-size:1.3em;cursor:pointer;margin-left:5px;display:none; }
+    #adminPanel {
+      display:none;position:absolute;right:30px;top:90px;background:rgba(20,0,0,0.9);
+      border:1px solid #ff2e2e66;border-radius:10px;box-shadow:0 0 15px #ff000066;
+      padding:10px;width:260px;text-align:left;z-index:999;
+    }
+    #adminPanel button { background:#ff2e2e;color:#fff;border:none;border-radius:6px;padding:6px 10px;margin-top:6px;cursor:pointer; }
+  </style>
 </head>
 <body>
+  <header>💬 ShynChat Pro v7.0 | ShynSuite</header>
 
-<header>💬 ShynChat Pro v6.1 | ShynSuite</header>
-
-<div id="loginDiv">
-  <button id="loginBtn">Đăng nhập bằng Google</button>
-</div>
-
-<div id="chatBox" style="display:none">
-  <div id="userName">
-    <span id="displayName"></span>
-    <button id="adminBtn" title="Admin Panel">👑</button>
+  <div id="loginDiv">
+    <input type="email" id="email" placeholder="Gmail...">
+    <input type="password" id="password" placeholder="Mật khẩu...">
+    <button id="loginBtn">Đăng nhập</button>
+    <p>Chưa có tài khoản? <a href="register.html" style="color:#ff2e2e">Đăng ký</a></p>
   </div>
-  <div id="messages"></div>
-  <div id="inputArea">
-    <input type="text" id="messageInput" placeholder="Nhập tin nhắn... (Enter gửi / Shift+Enter xuống dòng)">
-    <button id="sendBtn">Gửi</button>
-    <button id="logoutBtn">Đăng xuất</button>
+
+  <div id="chatBox">
+    <div id="userName">
+      <span id="displayName"></span>
+      <button id="adminBtn" title="Admin Panel">👑</button>
+    </div>
+    <div id="messages"></div>
+    <div>
+      <input type="text" id="messageInput" placeholder="Nhập tin nhắn... (Enter gửi)">
+      <button id="sendBtn">Gửi</button>
+      <button id="logoutBtn">Đăng xuất</button>
+    </div>
   </div>
-</div>
 
-<!-- Admin Panel -->
-<div id="adminPanel">
-  <h3>👑 Admin Panel</h3>
-  <div id="userList"></div>
-  <button id="clearChatBtn">🧹 Xóa toàn bộ chat</button>
-</div>
+  <div id="adminPanel">
+    <h3>👑 Admin Panel</h3>
+    <div id="userList"></div>
+    <button id="clearChatBtn">🧹 Xóa toàn bộ chat</button>
+  </div>
 
-<footer>Created by <b>ShynMMO ©2025</b> | Powered by Firebase</footer>
+  <footer>Created by <b>ShynMMO ©2025</b></footer>
 
 <script>
 const firebaseConfig = {
@@ -183,72 +127,58 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
-const provider = new firebase.auth.GoogleAuthProvider();
-
 const ADMIN_EMAIL = "pn23070999@gmail.com";
-let currentUser = null;
 
-const loginBtn = document.getElementById("loginBtn");
 const loginDiv = document.getElementById("loginDiv");
 const chatBox = document.getElementById("chatBox");
+const emailInput = document.getElementById("email");
+const passInput = document.getElementById("password");
+const loginBtn = document.getElementById("loginBtn");
 const displayName = document.getElementById("displayName");
 const adminBtn = document.getElementById("adminBtn");
+const adminPanel = document.getElementById("adminPanel");
 const messages = document.getElementById("messages");
 const msgInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 const logoutBtn = document.getElementById("logoutBtn");
-const adminPanel = document.getElementById("adminPanel");
 const userList = document.getElementById("userList");
 const clearChatBtn = document.getElementById("clearChatBtn");
 
-// Đăng nhập Google
-loginBtn.onclick = () => auth.signInWithPopup(provider).catch(e => alert("Lỗi đăng nhập: " + e.message));
+loginBtn.onclick = () => {
+  auth.signInWithEmailAndPassword(emailInput.value, passInput.value)
+  .catch(err => alert("Lỗi: " + err.message));
+};
 
-// Đăng xuất
 logoutBtn.onclick = () => auth.signOut();
 
-// Khi người dùng đăng nhập
 auth.onAuthStateChanged(user => {
   if (!user) {
     chatBox.style.display = "none";
     loginDiv.style.display = "block";
-    adminBtn.style.display = "none";
     return;
   }
-
-  currentUser = user;
   loginDiv.style.display = "none";
   chatBox.style.display = "block";
-  displayName.textContent = user.displayName || "Không tên";
+  displayName.textContent = user.email;
 
-  console.log("🔥 Đã đăng nhập:", user.displayName, "| Email:", user.email);
-
-  db.ref("users/" + user.uid).update({
-    name: user.displayName || "Không tên",
-    email: user.email || "Không rõ",
-    online: true
-  });
+  db.ref("users/" + user.uid).update({ email: user.email, online: true });
 
   loadMessages();
 
-  // ✅ Fix lỗi null email + check admin
-  if (user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+  if (user.email === ADMIN_EMAIL) {
     adminBtn.style.display = "inline";
     adminBtn.onclick = () => {
       adminPanel.style.display = adminPanel.style.display === "block" ? "none" : "block";
     };
     loadAdminPanel();
-  } else {
-    console.log("🚫 Không phải Admin:", user.email);
   }
 });
 
-// Khi tắt tab, set offline
 window.onbeforeunload = () => {
-  if (currentUser) db.ref("users/" + currentUser.uid + "/online").set(false);
+  const user = auth.currentUser;
+  if (user) db.ref("users/" + user.uid + "/online").set(false);
 };
 
-// Hiển thị tin nhắn
 function loadMessages() {
   db.ref("rooms/public").on("child_added", snap => {
     const m = snap.val();
@@ -260,19 +190,19 @@ function loadMessages() {
   });
 }
 
-// Gửi tin nhắn
 sendBtn.onclick = () => {
+  const user = auth.currentUser;
+  if (!user) return;
   const text = msgInput.value.trim();
   if (!text) return;
   db.ref("rooms/public").push({
-    sender: currentUser.displayName,
+    sender: user.email,
     text: text,
     time: Date.now()
   });
   msgInput.value = "";
 };
 
-// Enter gửi, Shift+Enter xuống dòng
 msgInput.addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
@@ -280,18 +210,14 @@ msgInput.addEventListener("keydown", e => {
   }
 });
 
-// Admin Panel
 function loadAdminPanel() {
   db.ref("users").on("value", snap => {
     userList.innerHTML = "";
     snap.forEach(child => {
       const u = child.val();
       const div = document.createElement("div");
-      div.innerHTML = `
-        <b>${u.name || "Không tên"}</b> (${u.email || ""})
-        - ${u.online ? "🟢" : "🔴"}
-        <button onclick="banUser('${child.key}')">Ban</button>
-      `;
+      div.innerHTML = `<b>${u.email}</b> - ${u.online ? "🟢" : "🔴"}
+        <button onclick="banUser('${child.key}')">Ban</button>`;
       userList.appendChild(div);
     });
   });
@@ -299,7 +225,7 @@ function loadAdminPanel() {
 
 function banUser(uid) {
   if (confirm("Cấm người dùng này?")) {
-    db.ref("users/" + uid).remove().then(() => alert("Đã cấm user thành công!"));
+    db.ref("users/" + uid).remove().then(() => alert("Đã cấm user!"));
   }
 }
 
