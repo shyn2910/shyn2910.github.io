@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Visualizer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #090909;
+        }
+        canvas {
+            border: 1px solid #333;
+        }
+        #fps-counter {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-family: monospace;
+            font-size: 16px;
+            z-index: 100;
+        }
+        #controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(40, 40, 40, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            font-family: monospace;
+            font-size: 16px;
+            z-index: 101;
+            text-align: center;
+        }
+        #controls label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        #controls span {
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="fps-counter"></div>
+    <div id="controls">
+        <label for="jellyfish-slider">Số lượng sứa: <span id="jellyfish-count">1</span></label>
+        <input type="range" id="jellyfish-slider" min="1" max="25" value="1">
+    </div>
+    <script>
+        // Mảng để chứa "bầy sứa"
+        let swarm = [];
+        let numJellyfish = 1; // Số lượng sứa, giờ có thể thay đổi
+        let lastFpsUpdate = 0; // Biến để theo dõi thời gian cập nhật FPS
+
+        // Helper function to calculate squared magnitude
+        const magSq = (x, y) => x * x + y * y;
+
+        // Class (khuôn mẫu) cho mỗi con sứa
+        class Visualizer {
+            constructor() {
+                this.t = random(100); // Thời gian animation nội tại, bắt đầu ngẫu nhiên
+                this.xOff = random(1000); // Hạt giống Perlin noise cho trục X
+                this.yOff = random(2000, 3000); // Hạt giống Perlin noise cho trục Y
+                
+                // Thuộc tính màu sắc
+                this.hue = random(360); // Màu ban đầu ngẫu nhiên
+                this.hueSpeed = random(0.1, 0.5); // Tốc độ đổi màu ngẫu nhiên
+                this.saturation = random(80, 100); // Độ bão hòa màu
+                this.brightness = random(90, 100); // Độ sáng
+            }
+
+            // Cập nhật trạng thái (vị trí và màu sắc)
+            update() {
+                // Di chuyển trong không gian Perlin noise
+                this.xOff += 0.001;
+                this.yOff += 0.001;
+
+                // Cập nhật thời gian animation nội tại
+                this.t += PI / 45;
+
+                // Cập nhật màu sắc để tạo hiệu ứng cầu vồng
+                this.hue = (this.hue + this.hueSpeed) % 360;
+            }
+
+            // Vẽ con sứa lên màn hình
+            display() {
+                // Tính toán vị trí trung tâm dựa trên Perlin noise
+                const centerX = map(noise(this.xOff), 0, 1, 0, width);
+                const centerY = map(noise(this.yOff), 0, 1, 0, height);
+
+                // Đặt màu vẽ cho con sứa này
+                stroke(this.hue, this.saturation, this.brightness, 60); // Thêm độ trong suốt
+
+                // Vẽ hình dạng với công thức gốc
+                for (let i = 0; i < 10000; i++) { // Khôi phục 5,000 điểm
+                    const x = i % 200; // Tính toán x như ban đầu
+                    const y = i / 55;  // Tính toán y như ban đầu
+
+                    const k = 9 * cos(x / 8);
+                    const e = y / 8 - 12.5;
+                    const d = magSq(k, e) / 99 + sin(this.t) / 6 + 0.5;
+                    const c = d / 2 + e / 69 - this.t / 16;
+                    const q = 99 - e * sin(atan2(k, e) * 7) / d + k * (3 + cos(d * d - this.t) * 2);
+                    
+                    point(
+                        (q * sin(c)) + centerX,
+                        ((q + 19 * d) * cos(c)) + centerY
+                    );
+                }
+            }
+        }
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            // Đặt hệ màu là HSB (Hue, Saturation, Brightness)
+            colorMode(HSB, 360, 100, 100, 100);
+            noFill();
+
+            // Tạo bầy sứa ban đầu
+            resetSwarm();
+
+            // Lấy các phần tử điều khiển từ HTML
+            const slider = document.getElementById('jellyfish-slider');
+            const countSpan = document.getElementById('jellyfish-count');
+
+            // Thêm sự kiện "input" cho thanh trượt
+            slider.addEventListener('input', (e) => {
+                numJellyfish = parseInt(e.target.value); // Cập nhật số lượng sứa
+                countSpan.textContent = numJellyfish;    // Cập nhật số hiển thị
+                resetSwarm();                            // Tạo lại bầy sứa
+            });
+        }
+
+        // Hàm để xóa và tạo lại bầy sứa
+        function resetSwarm() {
+            swarm = []; // Xóa bầy sứa cũ
+            for (let i = 0; i < numJellyfish; i++) {
+                swarm.push(new Visualizer());
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+
+        function draw() {
+            // Nền đen hơi mờ để tạo hiệu ứng vệt mờ (trailing effect)
+            background(0, 0, 5, 25); 
+
+            // Lặp qua từng con sứa trong bầy
+            for (let visualizer of swarm) {
+                visualizer.update(); // Cập nhật trạng thái
+                visualizer.display(); // Vẽ nó ra
+            }
+
+            // Cập nhật bộ đếm FPS mỗi 500ms để dễ đọc hơn
+            if (millis() - lastFpsUpdate > 500) {
+                let fps = frameRate();
+                document.getElementById('fps-counter').textContent = 'FPS: ' + fps.toFixed(0);
+                lastFpsUpdate = millis();
+            }
+        }
+    </script>
+</body>
+</html>
