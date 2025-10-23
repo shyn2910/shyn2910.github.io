@@ -1,26 +1,141 @@
-<!DOCTYPE html><html lang="vi"><head>
-<meta charset="UTF-8"><title>Admin Panel - ShynChat</title>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>ShynChat Admin Panel 💻</title>
+
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
+
 <style>
-body{background:#000;color:#fff;font-family:monospace;padding:20px;}
-h2{color:#ff2e2e;}table{border-collapse:collapse;width:100%;}
-td,th{border:1px solid #444;padding:8px;}button{background:#ff2e2e;border:none;color:white;padding:4px 8px;cursor:pointer;}
-</style></head><body>
+  body {
+    background: #0b0b0b;
+    color: #fff;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    padding: 20px;
+  }
+  h2 {
+    color: #ff2e2e;
+    text-shadow: 0 0 15px #ff0000;
+    margin-bottom: 20px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #151515;
+    border-radius: 8px;
+    box-shadow: 0 0 15px #ff2e2e55;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    text-align: left;
+  }
+  th {
+    background: #222;
+    color: #ff2e2e;
+  }
+  tr:hover {
+    background: #1f1f1f;
+  }
+  button {
+    background: #ff2e2e;
+    border: none;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #ff5555;
+  }
+  #user-count {
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+
 <h2>🧩 ShynChat Admin Panel</h2>
-<table id="userTable"><tr><th>Email</th><th>Online</th><th>Action</th></tr></table>
+<div id="user-count">Đang tải danh sách...</div>
+<table id="userTable">
+  <tr>
+    <th>Tên</th>
+    <th>Email</th>
+    <th>Trạng thái</th>
+    <th>Hành động</th>
+  </tr>
+</table>
+
 <script>
-const firebaseConfig={/* giống config index.html */};
-firebase.initializeApp(firebaseConfig);const db=firebase.database();
-const table=document.getElementById("userTable");
-db.ref("users").on("value",snap=>{
-  table.innerHTML="<tr><th>Email</th><th>Online</th><th>Action</th></tr>";
-  snap.forEach(c=>{
-    const u=c.val();const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${u.email}</td><td>${u.online?"🟢":"🔴"}</td>
-      <td><button onclick="banUser('${c.key}')">Ban</button></td>`;
-    table.appendChild(tr);
-  });
+// ========================
+// Firebase Configuration
+// ========================
+const firebaseConfig = {
+  apiKey: "AIzaSyDs3VrMSUnb7kl0MWYbMxnqR78anJ2SgJs",
+  authDomain: "shynchat.firebaseapp.com",
+  databaseURL: "https://shynchat-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "shynchat",
+  storageBucket: "shynchat.firebasestorage.app",
+  messagingSenderId: "180611398927",
+  appId: "1:180611398927:web:2566534da0f8f6935f927a",
+  measurementId: "G-8876T182RZ"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ========================
+// Load User List
+// ========================
+const userTable = document.getElementById("userTable");
+const userCount = document.getElementById("user-count");
+
+db.ref("users").on("value", snapshot => {
+  const data = snapshot.val();
+  userTable.innerHTML = `
+    <tr>
+      <th>Tên</th>
+      <th>Email</th>
+      <th>Trạng thái</th>
+      <th>Hành động</th>
+    </tr>
+  `;
+
+  let count = 0;
+  for (const key in data) {
+    const user = data[key];
+    if (!user) continue;
+    count++;
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${user.name || "(Không tên)"}</td>
+      <td>${user.email || "(Không email)"}</td>
+      <td>${user.online ? "🟢 Online" : "🔴 Offline"}</td>
+      <td>
+        <button onclick="banUser('${key}')">Ban</button>
+      </td>
+    `;
+    userTable.appendChild(row);
+  }
+
+  userCount.textContent = `Tổng số người dùng: ${count}`;
 });
-function banUser(uid){if(confirm("Cấm user này?"))db.ref("users/"+uid).remove();}
-</script></body></html>
+
+// ========================
+// Ban user (Admin quyền xóa user)
+// ========================
+function banUser(uid) {
+  const confirmBan = confirm("Bạn có chắc muốn cấm người dùng này?");
+  if (!confirmBan) return;
+  db.ref("users/" + uid).remove()
+    .then(() => alert("Đã cấm người dùng!"))
+    .catch(err => alert("Lỗi: " + err.message));
+}
+</script>
+
+</body>
+</html>
