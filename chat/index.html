@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShynChat Pro v8.1 | ShynSuite</title>
+  <title>ShynChat Pro v9.0 | ShynSuite</title>
   <link rel="icon" href="data:,">
   <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-storage-compat.js"></script>
   <style>
     :root {
       --bg: #000;
@@ -126,11 +127,12 @@
       z-index: 999;
     }
     #typingStatus { font-style: italic; color: #aaa; margin-top: 5px; }
+    img.chatImg { max-width:60%;border-radius:10px;margin:5px 0; }
   </style>
 </head>
 <body>
 <header>
-  💬 ShynChat Pro v8.1 | ShynSuite
+  💬 ShynChat Pro v9.0 | ShynSuite
   <button id="modeToggle" title="Đổi giao diện">☀️</button>
 </header>
 
@@ -151,6 +153,7 @@
   <div id="typingStatus"></div>
   <div>
     <input type="text" id="messageInput" placeholder="Nhập tin nhắn... (Enter gửi)">
+    <input type="file" id="imageUpload" accept="image/*" style="color:var(--fg);margin-top:5px;">
     <button id="sendBtn">Gửi</button>
     <button id="logoutBtn">Đăng xuất</button>
   </div>
@@ -179,6 +182,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
+const storage = firebase.storage();
 
 const ADMIN_EMAIL = "pn23070999@gmail.com";
 let currentUser = null, currentName = "";
@@ -208,30 +212,32 @@ const userList = document.getElementById("userList");
 const clearChatBtn = document.getElementById("clearChatBtn");
 const onlineList = document.getElementById("onlineList");
 const typingStatus = document.getElementById("typingStatus");
+const imageUpload = document.getElementById("imageUpload");
 
-// Đăng nhập
 loginBtn.onclick = () => auth.signInWithEmailAndPassword(emailInput.value, passInput.value).catch(e => alert(e.message));
-// Đăng xuất
 logoutBtn.onclick = () => auth.signOut();
 
-// Sự kiện Auth thay đổi
+db.ref("banned").on("value", snap => {
+  if (!currentUser) return;
+  if (snap.hasChild(currentUser.uid)) {
+    alert("Bạn đã bị Admin cấm truy cập!");
+    auth.signOut().then(() => location.reload());
+  }
+});
+
 auth.onAuthStateChanged(async user => {
   if (!user) { chatBox.style.display = "none"; loginDiv.style.display = "block"; return; }
   currentUser = user;
   loginDiv.style.display = "none"; chatBox.style.display = "block";
 
-  // Lấy hồ sơ người dùng
   const snap = await db.ref("users/" + user.uid).once("value");
   const u = snap.val() || {};
-
-  // Ưu tiên hiển thị displayName
   let resolvedName =
     (u.displayName && String(u.displayName).trim()) ||
     (u.name && String(u.name).trim()) ||
     (user.displayName && String(user.displayName).trim()) ||
     user.email.split("@")[0];
 
-  // Ghi đồng bộ nếu thiếu
   await db.ref("users/" + user.uid).update({
     email: user.email,
     displayName: resolvedName,
@@ -249,6 +255,24 @@ auth.onAuthStateChanged(async user => {
     adminBtn.onclick = () => adminPanel.style.display = adminPanel.style.display === "block" ? "none" : "block";
     loadAdminPanel();
   }
+
+  // Auto offline sau 10 phút không hoạt động
+  let lastActive = Date.now(), idleTimer;
+  function resetActivity() {
+    lastActive = Date.now();
+    db.ref("users/" + currentUser.uid + "/online").set(true);
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      if (Date.now() - lastActive >= 10 * 60 * 1000)
+        db.ref("users/" + currentUser.uid + "/online").set(false);
+    }, 10 * 60 * 1000);
+  }
+  document.onmousemove = resetActivity;
+  document.onkeypress = resetActivity;
+  window.onclick = resetActivity;
+  resetActivity();
+
+  db.ref("users/" + user.uid + "/online").onDisconnect().set(false);
 });
 
 window.onbeforeunload = () => { if (currentUser) db.ref("users/" + currentUser.uid + "/online").set(false); };
@@ -259,7 +283,13 @@ function loadMessages() {
     const time = new Date(m.time || Date.now()).toLocaleTimeString("vi-VN",{hour12:false});
     const div = document.createElement("div");
     div.className = "message";
-    div.innerHTML = `<span class='sender'>${m.sender}:</span> ${m.text}<span class='time'>${time}</span>`;
+    if (m.image) {
+      div.innerHTML = `<span class='sender'>${m.sender}:</span><br>
+        <img src="${m.image}" class='chatImg'>
+        <span class='time'>${time}</span>`;
+    } else {
+      div.innerHTML = `<span class='sender'>${m.sender}:</span> ${m.text}<span class='time'>${time}</span>`;
+    }
     messages.appendChild(div);
     messages.scrollTop = messages.scrollHeight;
     if (m.sender !== currentName) msgSound.play();
@@ -284,7 +314,6 @@ msgInput.addEventListener("input", () => {
   clearTimeout(typingTimeout);
   typingTimeout = setTimeout(() => db.ref("typing/" + currentUser.uid).remove(), 1000);
 });
-
 db.ref("typing").on("value", snap => {
   let text = "";
   snap.forEach(c => {
@@ -301,8 +330,23 @@ sendBtn.onclick = () => {
   msgInput.value = "";
   db.ref("typing/" + currentUser.uid).remove();
 };
+
 msgInput.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendBtn.click(); } });
 
+// Gửi ảnh
+imageUpload.onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) return alert("Ảnh vượt quá 2MB!");
+  const path = `images/${currentUser.uid}_${Date.now()}_${file.name}`;
+  const ref = storage.ref(path);
+  await ref.put(file);
+  const url = await ref.getDownloadURL();
+  await db.ref("rooms/public").push({ sender: currentName, image: url, time: Date.now() });
+  imageUpload.value = "";
+};
+
+// Admin
 function loadAdminPanel() {
   db.ref("users").on("value", snap => {
     userList.innerHTML = "";
@@ -314,7 +358,13 @@ function loadAdminPanel() {
     });
   });
 }
-function banUser(uid) { if (confirm("Cấm người dùng này?")) db.ref("users/" + uid).remove().then(() => alert("Đã cấm user!")); }
+function banUser(uid) {
+  if (confirm("Cấm người dùng này?")) {
+    db.ref("banned/" + uid).set(true);
+    db.ref("users/" + uid).remove();
+    alert("Đã cấm user và xóa dữ liệu!");
+  }
+}
 clearChatBtn.onclick = () => { if (confirm("Xóa toàn bộ chat?")) db.ref("rooms/public").remove(); };
 </script>
 </body>
