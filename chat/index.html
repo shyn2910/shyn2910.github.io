@@ -2,11 +2,12 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>ShynChat Pro v4.0 💬</title>
+<title>ShynChat Pro v4.1 💬 | ShynSuite</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-storage-compat.js"></script>
+
 <style>
   :root {
     --bg: #0a0a0a;
@@ -80,11 +81,18 @@
     cursor: pointer;
   }
   #theme-toggle { position: fixed; top: 10px; right: 10px; cursor: pointer; }
+  #room-label {
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--accent);
+  }
 </style>
 </head>
 <body>
 
-<h2>💬 ShynChat Pro v4.0 | ShynSuite</h2>
+<h2>💬 ShynChat Pro v4.1 | ShynSuite</h2>
 <button id="theme-toggle">🌙</button>
 
 <div id="login-section">
@@ -93,6 +101,7 @@
 
 <div id="chat-container">
   <div id="user-info"></div>
+  <div id="room-label">PHÒNG CHUNG</div>
   <div id="online-users"></div>
   <div id="chat-box"></div>
   <div id="typing"></div>
@@ -115,14 +124,13 @@ const firebaseConfig = {
   messagingSenderId: "180611398927",
   appId: "1:180611398927:web:2566534da0f8f6935f927a",
   measurementId: "G-8876T182RZ"
-};	
-  const app = firebase.initializeApp(firebaseConfig);
+};
+  firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.database();
   const storage = firebase.storage();
   const provider = new firebase.auth.GoogleAuthProvider();
 
-  // Elements
   const googleLogin = document.getElementById("googleLogin");
   const loginSection = document.getElementById("login-section");
   const chatContainer = document.getElementById("chat-container");
@@ -133,6 +141,7 @@ const firebaseConfig = {
   const onlineUsers = document.getElementById("online-users");
   const userInfo = document.getElementById("user-info");
   const notifSound = document.getElementById("notifSound");
+  const roomLabel = document.getElementById("room-label");
   const themeToggle = document.getElementById("theme-toggle");
 
   let currentUser = null;
@@ -146,19 +155,24 @@ const firebaseConfig = {
       loginSection.style.display = "none";
       chatContainer.style.display = "block";
       userInfo.innerHTML = `<img src="${user.photoURL}" width="40" style="border-radius:50%"> ${user.displayName}`;
-      setUserOnline(user.uid, user.displayName, user.email);
-      loadUsers();
-      loadMessages();
-      setupTypingIndicator();
+      roomLabel.textContent = "PHÒNG CHUNG";
+      joinPublicRoom();
     } else {
       loginSection.style.display = "block";
       chatContainer.style.display = "none";
     }
   });
 
+  function joinPublicRoom() {
+    currentRoom = "public";
+    setUserOnline(currentUser.uid, currentUser.displayName, currentUser.email);
+    loadUsers();
+    loadMessages();
+    setupTypingIndicator();
+  }
+
   function logout() { auth.signOut(); }
 
-  // Online management
   function setUserOnline(uid, name, email) {
     const ref = db.ref("users/" + uid);
     ref.set({ name, email, online: true });
@@ -176,11 +190,10 @@ const firebaseConfig = {
         div.className = "user";
         div.oncontextmenu = e => {
           e.preventDefault();
-          if (currentUser.email === "admin@shyn.vn") {
-            const action = prompt("Chọn: Delete/Ban/Chat");
-            if (action?.toLowerCase() === "ban") db.ref("users/" + child.key).remove();
-            if (action?.toLowerCase() === "chat") startPrivateChat(u.name);
-          } else startPrivateChat(u.name);
+          const action = prompt("Chọn hành động: Chat / Ban (chỉ Admin)");
+          if (action?.toLowerCase() === "chat") startPrivateChat(u.name);
+          if (action?.toLowerCase() === "ban" && currentUser.email === "admin@shyn.vn")
+            db.ref("users/" + child.key).remove();
         };
         onlineUsers.appendChild(div);
       });
@@ -189,6 +202,7 @@ const firebaseConfig = {
 
   function loadMessages() {
     chatBox.innerHTML = "";
+    db.ref("rooms/" + currentRoom).off();
     db.ref("rooms/" + currentRoom).on("child_added", snap => {
       const d = snap.val();
       const div = document.createElement("div");
@@ -196,7 +210,7 @@ const firebaseConfig = {
       div.innerHTML = `<span class="user">${d.userName}</span>: ${d.text || ""}
         ${d.imageUrl ? `<img src="${d.imageUrl}">` : ""}
         <div class="time">${new Date(d.time).toLocaleTimeString()}</div>`;
-      div.ondblclick = () => div.innerHTML += " 😊"; // Emoji reaction
+      div.ondblclick = () => div.innerHTML += " 😊";
       div.oncontextmenu = e => {
         e.preventDefault();
         if (currentUser.email === "admin@shyn.vn") {
@@ -240,7 +254,6 @@ const firebaseConfig = {
     }
   });
 
-  // Typing indicator
   function setupTypingIndicator() {
     db.ref("typing/" + currentRoom).on("value", snap => {
       const val = snap.val();
@@ -251,16 +264,14 @@ const firebaseConfig = {
     });
   }
 
-  // Private chat
-  function startPrivateChat(target) {
-    if (target === currentUser.displayName) return;
-    currentRoom = `private_${[currentUser.displayName, target].sort().join("_")}`;
-    alert("Đang chat riêng với " + target);
+  function startPrivateChat(targetUser) {
+    if (targetUser === currentUser.displayName) return;
+    currentRoom = `private_${[currentUser.displayName, targetUser].sort().join("_")}`;
+    roomLabel.textContent = "PHÒNG RIÊNG: " + targetUser;
     loadMessages();
     setupTypingIndicator();
   }
 
-  // Theme toggle
   let isDark = true;
   themeToggle.onclick = () => {
     isDark = !isDark;
