@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShynChat Pro v9.0 | ShynSuite</title>
+  <title>ShynChat Pro v9.2 | HardBan Edition</title>
   <link rel="icon" href="data:,">
   <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
@@ -11,128 +11,58 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-storage-compat.js"></script>
   <style>
     :root {
-      --bg: #000;
-      --fg: #fff;
-      --accent: #ff2e2e;
-      --box: #111;
+      --bg: #000; --fg: #fff; --accent: #ff2e2e; --box: #111;
     }
-    body.light {
-      --bg: #f5f5f5;
-      --fg: #111;
-      --box: #fff;
-      --accent: #ff4444;
-    }
+    body.light { --bg: #f5f5f5; --fg: #111; --box: #fff; --accent: #ff4444; }
     body {
-      background: var(--bg);
-      color: var(--fg);
+      background: var(--bg); color: var(--fg);
       font-family: 'Be Vietnam Pro', sans-serif;
-      text-align: center;
-      margin: 0;
-      transition: 0.3s;
+      text-align: center; margin: 0; transition: 0.3s;
     }
     header {
-      padding: 15px;
-      color: var(--accent);
-      text-shadow: 0 0 15px var(--accent);
-      font-size: 1.5em;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
+      padding: 15px; color: var(--accent); text-shadow: 0 0 15px var(--accent);
+      font-size: 1.5em; display: flex; justify-content: center; align-items: center; gap: 10px;
     }
     #modeToggle {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 35px;
-      height: 35px;
-      cursor: pointer;
-      font-size: 1.2em;
+      background: var(--accent); color: #fff; border: none; border-radius: 50%;
+      width: 35px; height: 35px; cursor: pointer; font-size: 1.2em;
       box-shadow: 0 0 10px var(--accent);
     }
+    input, button { border-radius: 6px; border: none; padding: 10px; }
     input {
-      display: block;
-      margin: 10px auto;
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
-      width: 260px;
-      background: var(--box);
-      color: var(--fg);
+      display: block; margin: 10px auto; width: 260px;
+      background: var(--box); color: var(--fg);
     }
     button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 10px 16px;
-      cursor: pointer;
-      transition: 0.2s;
+      background: var(--accent); color: #fff; cursor: pointer; transition: 0.2s;
     }
+    button:hover { filter: brightness(1.3); }
     #chatBox {
-      display: none;
-      width: 85%;
-      max-width: 900px;
-      margin: 20px auto;
-      background: var(--box);
-      border-radius: 12px;
-      box-shadow: 0 0 25px var(--accent);
-      padding: 10px;
+      display: none; width: 85%; max-width: 900px;
+      margin: 20px auto; background: var(--box);
+      border-radius: 12px; box-shadow: 0 0 25px var(--accent); padding: 10px;
     }
     #messages {
-      height: 400px;
-      overflow-y: auto;
-      background: var(--bg);
-      border-radius: 10px;
-      padding: 10px;
-      text-align: left;
+      height: 400px; overflow-y: auto; background: var(--bg);
+      border-radius: 10px; padding: 10px; text-align: left;
     }
-    .message {
-      margin-bottom: 10px;
-      padding: 6px 10px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.05);
-    }
-    .sender {
-      color: var(--accent);
-      font-weight: bold;
-    }
-    .time {
-      float: right;
-      font-size: 0.8em;
-      color: #aaa;
-    }
-    #adminBtn {
-      background: none;
-      border: none;
-      color: var(--accent);
-      font-size: 1.3em;
-      cursor: pointer;
-      margin-left: 5px;
-      display: none;
-    }
+    .message { margin-bottom: 10px; padding: 6px 10px;
+      border-radius: 8px; background: rgba(255,255,255,0.05); }
+    .sender { color: var(--accent); font-weight: bold; }
+    .time { float: right; font-size: 0.8em; color: #aaa; }
+    img.chatImg { max-width:60%;border-radius:10px;margin:5px 0; }
     #adminPanel {
-      display: none;
-      position: absolute;
-      right: 30px;
-      top: 90px;
-      background: rgba(20,0,0,0.9);
-      border: 1px solid var(--accent);
-      border-radius: 10px;
-      box-shadow: 0 0 15px var(--accent);
-      padding: 10px;
-      width: 260px;
-      text-align: left;
-      z-index: 999;
+      display: none; position: absolute; right: 30px; top: 90px;
+      background: rgba(20,0,0,0.9); border: 1px solid var(--accent);
+      border-radius: 10px; box-shadow: 0 0 15px var(--accent);
+      padding: 10px; width: 260px; text-align: left; z-index: 999;
     }
     #typingStatus { font-style: italic; color: #aaa; margin-top: 5px; }
-    img.chatImg { max-width:60%;border-radius:10px;margin:5px 0; }
   </style>
 </head>
 <body>
 <header>
-  💬 ShynChat Pro v9.0 | ShynSuite
+  💬 ShynChat Pro v9.2 | HardBan Edition
   <button id="modeToggle" title="Đổi giao diện">☀️</button>
 </header>
 
@@ -146,7 +76,7 @@
 <div id="chatBox">
   <div id="userName">
     <span id="displayName"></span>
-    <button id="adminBtn" title="Admin Panel">👑</button>
+    <button id="adminBtn" title="Admin Panel" style="display:none;">👑</button>
   </div>
   <div id="onlineList"></div>
   <div id="messages"></div>
@@ -166,7 +96,6 @@
 </div>
 
 <footer>Created by <b>ShynMMO ©2025</b></footer>
-
 <audio id="msgSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
 
 <script>
@@ -217,10 +146,11 @@ const imageUpload = document.getElementById("imageUpload");
 loginBtn.onclick = () => auth.signInWithEmailAndPassword(emailInput.value, passInput.value).catch(e => alert(e.message));
 logoutBtn.onclick = () => auth.signOut();
 
+// Khi user bị BAN => signOut ngay lập tức
 db.ref("banned").on("value", snap => {
   if (!currentUser) return;
   if (snap.hasChild(currentUser.uid)) {
-    alert("Bạn đã bị Admin cấm truy cập!");
+    alert("🚫 Tài khoản của bạn đã bị Admin xóa khỏi hệ thống!");
     auth.signOut().then(() => location.reload());
   }
 });
@@ -234,43 +164,22 @@ auth.onAuthStateChanged(async user => {
   const u = snap.val() || {};
   let resolvedName =
     (u.displayName && String(u.displayName).trim()) ||
-    (u.name && String(u.name).trim()) ||
-    (user.displayName && String(user.displayName).trim()) ||
     user.email.split("@")[0];
 
   await db.ref("users/" + user.uid).update({
-    email: user.email,
-    displayName: resolvedName,
-    online: true
+    email: user.email, displayName: resolvedName, online: true
   });
 
   currentName = resolvedName;
   displayName.textContent = currentName;
-
-  loadMessages();
-  showOnlineUsers();
+  loadMessages(); showOnlineUsers();
 
   if (user.email === ADMIN_EMAIL) {
     adminBtn.style.display = "inline";
-    adminBtn.onclick = () => adminPanel.style.display = adminPanel.style.display === "block" ? "none" : "block";
+    adminBtn.onclick = () => adminPanel.style.display =
+      adminPanel.style.display === "block" ? "none" : "block";
     loadAdminPanel();
   }
-
-  // Auto offline sau 10 phút không hoạt động
-  let lastActive = Date.now(), idleTimer;
-  function resetActivity() {
-    lastActive = Date.now();
-    db.ref("users/" + currentUser.uid + "/online").set(true);
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => {
-      if (Date.now() - lastActive >= 10 * 60 * 1000)
-        db.ref("users/" + currentUser.uid + "/online").set(false);
-    }, 10 * 60 * 1000);
-  }
-  document.onmousemove = resetActivity;
-  document.onkeypress = resetActivity;
-  window.onclick = resetActivity;
-  resetActivity();
 
   db.ref("users/" + user.uid + "/online").onDisconnect().set(false);
 });
@@ -301,7 +210,7 @@ function showOnlineUsers() {
     onlineList.innerHTML = "<h4>👥 Thành viên</h4>";
     snap.forEach(c => {
       const u = c.val() || {};
-      const name = u.displayName || u.name || u.email;
+      const name = u.displayName || u.email;
       onlineList.innerHTML += `${name} ${u.online ? "🟢" : "🔴"}<br>`;
     });
   });
@@ -316,54 +225,46 @@ msgInput.addEventListener("input", () => {
 });
 db.ref("typing").on("value", snap => {
   let text = "";
-  snap.forEach(c => {
-    const u = c.val();
-    if (u.typing && u.name !== currentName) text += `${u.name} đang nhập... `;
-  });
+  snap.forEach(c => { const u = c.val(); if (u.typing && u.name !== currentName) text += `${u.name} đang nhập... `; });
   typingStatus.textContent = text;
 });
-
 sendBtn.onclick = () => {
   if (!currentUser) return;
   const text = msgInput.value.trim(); if (!text) return;
   db.ref("rooms/public").push({ sender: currentName, text: text, time: Date.now() });
-  msgInput.value = "";
-  db.ref("typing/" + currentUser.uid).remove();
+  msgInput.value = ""; db.ref("typing/" + currentUser.uid).remove();
 };
-
 msgInput.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendBtn.click(); } });
-
-// Gửi ảnh
 imageUpload.onchange = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+  const file = e.target.files[0]; if (!file) return;
   if (file.size > 2 * 1024 * 1024) return alert("Ảnh vượt quá 2MB!");
   const path = `images/${currentUser.uid}_${Date.now()}_${file.name}`;
   const ref = storage.ref(path);
-  await ref.put(file);
-  const url = await ref.getDownloadURL();
+  await ref.put(file); const url = await ref.getDownloadURL();
   await db.ref("rooms/public").push({ sender: currentName, image: url, time: Date.now() });
   imageUpload.value = "";
 };
 
-// Admin
+// ---- ADMIN ----
 function loadAdminPanel() {
   db.ref("users").on("value", snap => {
     userList.innerHTML = "";
     snap.forEach(c => {
       const u = c.val() || {};
-      const name = u.displayName || u.name || u.email;
+      const name = u.displayName || u.email;
       userList.innerHTML += `<div><b>${name}</b> - ${u.online ? "🟢" : "🔴"}
       <button onclick="banUser('${c.key}')">Ban</button></div>`;
     });
   });
 }
-function banUser(uid) {
-  if (confirm("Cấm người dùng này?")) {
-    db.ref("banned/" + uid).set(true);
-    db.ref("users/" + uid).remove();
-    alert("Đã cấm user và xóa dữ liệu!");
-  }
+async function banUser(uid) {
+  if (!confirm("⚠️ Xóa vĩnh viễn tài khoản này khỏi hệ thống?")) return;
+  const userSnap = await db.ref("users/" + uid).once("value");
+  const bannedUser = userSnap.val();
+  await db.ref("users/" + uid).remove();
+  await db.ref("typing/" + uid).remove();
+  await db.ref("banned/" + uid).set({ email: bannedUser.email, time: Date.now() });
+  alert("🚫 Đã gửi lệnh xóa tài khoản. Server sẽ xử lý xóa khỏi Firebase Auth trong vài giây.");
 }
 clearChatBtn.onclick = () => { if (confirm("Xóa toàn bộ chat?")) db.ref("rooms/public").remove(); };
 </script>
