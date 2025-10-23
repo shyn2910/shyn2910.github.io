@@ -2,8 +2,8 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>💬 ShynChat Pro v6.0 | ShynSuite</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💬 ShynChat Pro v6.0 | ShynSuite</title>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
@@ -12,50 +12,52 @@
 
 <style>
 body {
-  margin: 0; padding: 0;
   font-family: 'Be Vietnam Pro', sans-serif;
-  background: #0d0d0d; color: #fff;
+  background: radial-gradient(circle at top, #0d0d0d, #000);
+  color: #fff;
   text-align: center;
+  margin: 0;
+  padding: 0;
 }
 header {
   padding: 15px;
-  font-size: 1.5em;
   color: #ff2e2e;
   text-shadow: 0 0 15px #ff0000, 0 0 30px #ff2e2e;
+  font-size: 1.5em;
 }
 #chatBox {
-  width: 80%;
-  max-width: 700px;
-  margin: auto;
+  width: 85%;
+  max-width: 800px;
+  margin: 20px auto;
   background: #111;
-  border-radius: 10px;
-  padding: 10px;
+  border-radius: 12px;
   box-shadow: 0 0 25px #ff2e2e55;
+  padding: 10px;
 }
 #messages {
-  height: 400px;
+  height: 420px;
   overflow-y: auto;
-  border: 1px solid #222;
-  padding: 10px;
-  border-radius: 10px;
-  text-align: left;
   background: #000;
+  border-radius: 10px;
+  border: 1px solid #222;
+  text-align: left;
+  padding: 10px;
 }
 .message {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   padding: 6px 10px;
   border-radius: 8px;
   background: #1a1a1a;
 }
 .sender {
   color: #ff2e2e;
-  font-weight: 600;
+  font-weight: bold;
 }
 #inputArea {
   margin-top: 10px;
 }
 #messageInput {
-  width: 70%;
+  width: 65%;
   padding: 8px;
   border-radius: 8px;
   border: none;
@@ -68,47 +70,66 @@ button {
   padding: 8px 14px;
   border-radius: 6px;
   cursor: pointer;
+  transition: 0.2s;
   margin-left: 5px;
 }
 button:hover {
   background: #ff5555;
   box-shadow: 0 0 10px #ff2e2e;
 }
-#adminPanel {
-  position: fixed;
-  top: 60px;
-  right: 20px;
-  width: 320px;
-  background: rgba(20, 0, 0, 0.9);
-  border: 1px solid #ff2e2e88;
-  box-shadow: 0 0 15px #ff0000aa;
-  border-radius: 10px;
-  padding: 10px;
+#userName {
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #ff2e2e;
+  text-shadow: 0 0 8px #ff0000;
+}
+#adminBtn {
+  background: none;
+  border: none;
+  color: #ff2e2e;
+  font-size: 1.3em;
+  cursor: pointer;
+  margin-left: 5px;
+  text-shadow: 0 0 10px #ff0000;
   display: none;
-  z-index: 1000;
+}
+#adminBtn:hover {
+  transform: scale(1.2);
+  color: #ff5555;
+}
+#adminPanel {
+  display: none;
+  position: absolute;
+  right: 30px;
+  top: 90px;
+  background: rgba(20, 0, 0, 0.9);
+  border: 1px solid #ff2e2e66;
+  border-radius: 10px;
+  box-shadow: 0 0 15px #ff000066;
+  padding: 10px;
+  width: 260px;
   text-align: left;
+  z-index: 999;
 }
 #adminPanel h3 {
+  margin: 0 0 5px;
   color: #ff2e2e;
   text-shadow: 0 0 10px #ff0000;
+  font-size: 1em;
 }
 #adminPanel button {
-  margin-top: 5px;
-}
-#toggleAdmin {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
   background: #ff2e2e;
-  border-radius: 50%;
-  width: 55px;
-  height: 55px;
-  box-shadow: 0 0 20px #ff0000aa;
+  color: #fff;
   border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-top: 6px;
   cursor: pointer;
-  color: white;
-  font-size: 1.3em;
-  display: none;
+  transition: 0.2s;
+}
+#adminPanel button:hover {
+  background: #ff5555;
+  box-shadow: 0 0 10px #ff2e2e;
 }
 footer {
   margin-top: 20px;
@@ -126,21 +147,21 @@ footer {
 </div>
 
 <div id="chatBox" style="display:none">
-  <div id="userName"></div>
+  <div id="userName">
+    <span id="displayName"></span>
+    <button id="adminBtn" title="Admin Panel">👑</button>
+  </div>
   <div id="messages"></div>
   <div id="inputArea">
-    <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." />
+    <input type="text" id="messageInput" placeholder="Nhập tin nhắn... (Enter gửi / Shift+Enter xuống dòng)">
     <button id="sendBtn">Gửi</button>
     <button id="logoutBtn">Đăng xuất</button>
   </div>
 </div>
 
-<!-- Nút bật/tắt bảng Admin -->
-<button id="toggleAdmin">👑</button>
-
-<!-- Bảng Admin -->
+<!-- Admin Panel -->
 <div id="adminPanel">
-  <h3>👑 Bảng điều khiển Admin</h3>
+  <h3>👑 Admin Panel</h3>
   <div id="userList"></div>
   <button id="clearChatBtn">🧹 Xóa toàn bộ chat</button>
 </div>
@@ -161,39 +182,45 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
+const provider = new firebase.auth.GoogleAuthProvider();
 
 const ADMIN_EMAIL = "pn23070999@gmail.com";
+let currentUser = null;
+
 const loginBtn = document.getElementById("loginBtn");
 const loginDiv = document.getElementById("loginDiv");
 const chatBox = document.getElementById("chatBox");
+const displayName = document.getElementById("displayName");
+const adminBtn = document.getElementById("adminBtn");
 const messages = document.getElementById("messages");
 const msgInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 const logoutBtn = document.getElementById("logoutBtn");
-const toggleAdmin = document.getElementById("toggleAdmin");
 const adminPanel = document.getElementById("adminPanel");
 const userList = document.getElementById("userList");
 const clearChatBtn = document.getElementById("clearChatBtn");
 
-const provider = new firebase.auth.GoogleAuthProvider();
-let currentUser = null;
+// Đăng nhập Google
+loginBtn.onclick = () => auth.signInWithPopup(provider).catch(e => alert("Lỗi đăng nhập: " + e.message));
 
-loginBtn.onclick = () => auth.signInWithPopup(provider).catch(err => alert("Lỗi: " + err.message));
+// Đăng xuất
 logoutBtn.onclick = () => auth.signOut();
 
+// Khi người dùng đăng nhập
 auth.onAuthStateChanged(user => {
   if (!user) {
     chatBox.style.display = "none";
     loginDiv.style.display = "block";
-    toggleAdmin.style.display = "none";
+    adminBtn.style.display = "none";
     return;
   }
 
   currentUser = user;
   loginDiv.style.display = "none";
   chatBox.style.display = "block";
-  document.getElementById("userName").innerHTML = `<b>${user.displayName}</b> (${user.email})`;
+  displayName.textContent = user.displayName;
 
+  // Ghi nhận người dùng online
   db.ref("users/" + user.uid).update({
     name: user.displayName,
     email: user.email,
@@ -202,16 +229,22 @@ auth.onAuthStateChanged(user => {
 
   loadMessages();
 
+  // Nếu là Admin
   if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-    toggleAdmin.style.display = "block";
+    adminBtn.style.display = "inline";
+    adminBtn.onclick = () => {
+      adminPanel.style.display = adminPanel.style.display === "block" ? "none" : "block";
+    };
     loadAdminPanel();
   }
 });
 
+// Khi tắt tab, set offline
 window.onbeforeunload = () => {
   if (currentUser) db.ref("users/" + currentUser.uid + "/online").set(false);
 };
 
+// Hiển thị tin nhắn
 function loadMessages() {
   db.ref("rooms/public").on("child_added", snap => {
     const m = snap.val();
@@ -223,20 +256,27 @@ function loadMessages() {
   });
 }
 
+// Gửi tin nhắn
 sendBtn.onclick = () => {
-  if (!msgInput.value.trim()) return;
+  const text = msgInput.value.trim();
+  if (!text) return;
   db.ref("rooms/public").push({
     sender: currentUser.displayName,
-    text: msgInput.value.trim(),
+    text: text,
     time: Date.now()
   });
   msgInput.value = "";
 };
 
-toggleAdmin.onclick = () => {
-  adminPanel.style.display = adminPanel.style.display === "block" ? "none" : "block";
-};
+// Enter gửi, Shift+Enter xuống dòng
+msgInput.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendBtn.click();
+  }
+});
 
+// Admin Panel
 function loadAdminPanel() {
   db.ref("users").on("value", snap => {
     userList.innerHTML = "";
@@ -244,8 +284,8 @@ function loadAdminPanel() {
       const u = child.val();
       const div = document.createElement("div");
       div.innerHTML = `
-        <b>${u.name || "Không tên"}</b> - ${u.email || ""}
-        (${u.online ? "🟢" : "🔴"})
+        <b>${u.name || "Không tên"}</b> (${u.email || ""})
+        - ${u.online ? "🟢" : "🔴"}
         <button onclick="banUser('${child.key}')">Ban</button>
       `;
       userList.appendChild(div);
@@ -255,15 +295,13 @@ function loadAdminPanel() {
 
 function banUser(uid) {
   if (confirm("Cấm người dùng này?")) {
-    db.ref("users/" + uid).remove();
-    alert("Đã cấm user thành công!");
+    db.ref("users/" + uid).remove().then(() => alert("Đã cấm user thành công!"));
   }
 }
 
 clearChatBtn.onclick = () => {
   if (confirm("Xóa toàn bộ tin nhắn phòng chung?")) {
-    db.ref("rooms/public").remove();
-    alert("Đã xóa toàn bộ chat!");
+    db.ref("rooms/public").remove().then(() => alert("Đã xóa toàn bộ chat!"));
   }
 };
 </script>
