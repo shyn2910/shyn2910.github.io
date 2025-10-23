@@ -2,85 +2,66 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel | ShynChat Secure v5.0</title>
+<title>ShynChat Admin Panel v5.0 | Secure by ShynSuite</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-database-compat.js"></script>
-
 <style>
 body {
   background: #0a0a0a;
   color: #fff;
   font-family: 'Be Vietnam Pro', sans-serif;
-  padding: 20px;
   text-align: center;
+  margin: 0; padding: 20px;
 }
 h2 {
   color: #ff2e2e;
   text-shadow: 0 0 15px #ff0000;
-  margin-bottom: 10px;
 }
 button {
   background: #ff2e2e;
-  border: none;
   color: white;
-  padding: 6px 12px;
-  margin: 5px;
+  border: none;
   border-radius: 6px;
+  padding: 8px 14px;
+  margin: 5px;
   cursor: pointer;
   transition: 0.2s;
 }
-button:hover {
-  background: #ff5555;
-  box-shadow: 0 0 10px #ff2e2e;
-}
+button:hover { background: #ff5555; box-shadow: 0 0 10px #ff2e2e; }
 table {
   width: 100%;
   border-collapse: collapse;
   background: #151515;
-  border-radius: 8px;
-  box-shadow: 0 0 15px #ff2e2e55;
-  margin-top: 20px;
-}
-th, td {
-  padding: 10px;
-  border-bottom: 1px solid #333;
-}
-th {
-  color: #ff2e2e;
-  background: #1a1a1a;
-}
-tr:hover {
-  background: rgba(255,255,255,0.05);
-}
-#clearBtn {
+  border-radius: 10px;
+  box-shadow: 0 0 20px #ff2e2e55;
   margin-top: 15px;
+}
+th, td { padding: 10px; border-bottom: 1px solid #333; }
+th { color: #ff2e2e; background: #1a1a1a; }
+tr:hover { background: rgba(255,255,255,0.05); }
+#clearBtn {
+  margin-top: 20px;
   background: linear-gradient(90deg, #ff2e2e, #ff7a7a);
 }
 </style>
 </head>
 <body>
-
 <h2>🧩 ShynChat Admin Panel v5.0</h2>
-<div id="login"><button id="loginBtn">Đăng nhập bằng Google</button></div>
+<div id="login">
+  <button id="loginBtn">Đăng nhập bằng Google</button>
+</div>
 
 <div id="content" style="display:none;">
   <h3>Danh sách người dùng</h3>
   <table id="tbl">
-    <tr>
-      <th>Tên</th>
-      <th>Email</th>
-      <th>Online</th>
-      <th>Hành động</th>
-    </tr>
+    <tr><th>Tên</th><th>Email</th><th>Online</th><th>Hành động</th></tr>
   </table>
   <button id="clearBtn">🧹 Xóa toàn bộ tin nhắn</button>
 </div>
 
 <script>
-// ========================
-// Firebase Config
-// ========================
+// ================= Firebase Config =================
 const firebaseConfig = {
   apiKey: "AIzaSyDs3VrMSUnb7kl0MWYbMxnqR78anJ2SgJs",
   authDomain: "shynchat.firebaseapp.com",
@@ -91,12 +72,11 @@ const firebaseConfig = {
   appId: "1:180611398927:web:2566534da0f8f6935f927a"
 };
 firebase.initializeApp(firebaseConfig);
-
 const auth = firebase.auth();
 const db = firebase.database();
 const provider = new firebase.auth.GoogleAuthProvider();
 
-const adminEmail = "pn23070999@gmail.com"; // Gmail admin cố định
+const adminEmail = "pn23070999@gmail.com";
 
 const loginBtn = document.getElementById("loginBtn");
 const loginDiv = document.getElementById("login");
@@ -104,40 +84,35 @@ const contentDiv = document.getElementById("content");
 const table = document.getElementById("tbl");
 const clearBtn = document.getElementById("clearBtn");
 
-// ========================
-// Đăng nhập
-// ========================
-loginBtn.onclick = () => auth.signInWithPopup(provider);
+// ========== Đăng nhập ==========
+loginBtn.onclick = () => auth.signInWithPopup(provider)
+  .catch(err => alert("❌ Lỗi đăng nhập: " + err.message));
 
 auth.onAuthStateChanged(user => {
-  if (!user) return;
+  // Nếu chưa có user hoặc chưa có email => chờ
+  if (!user || !user.email) return;
 
   // So sánh không phân biệt hoa thường
-  if (user.email.toLowerCase() !== adminEmail.toLowerCase()) {
-    alert("🚫 Truy cập bị từ chối! Bạn không có quyền Admin.");
+  const userEmail = user.email.toLowerCase();
+  const adminCheck = adminEmail.toLowerCase();
+
+  if (userEmail !== adminCheck) {
+    alert("🚫 Truy cập bị từ chối! Tài khoản này không có quyền Admin.");
     auth.signOut();
     location.href = "index.html";
     return;
   }
 
-  // Nếu đúng Admin
+  // Đúng admin
   loginDiv.style.display = "none";
   contentDiv.style.display = "block";
   loadUsers();
 });
 
-// ========================
-// Hiển thị danh sách user
-// ========================
+// ========== Load danh sách User ==========
 function loadUsers() {
   db.ref("users").on("value", snap => {
-    table.innerHTML = `
-      <tr>
-        <th>Tên</th>
-        <th>Email</th>
-        <th>Online</th>
-        <th>Hành động</th>
-      </tr>`;
+    table.innerHTML = `<tr><th>Tên</th><th>Email</th><th>Online</th><th>Hành động</th></tr>`;
     snap.forEach(child => {
       const u = child.val();
       const tr = document.createElement("tr");
@@ -151,33 +126,24 @@ function loadUsers() {
   });
 }
 
-// ========================
-// Ban người dùng
-// ========================
+// ========== Ban người dùng ==========
 function banUser(uid) {
-  if (confirm("Bạn có chắc muốn cấm người dùng này không?")) {
+  if (confirm("⚠️ Bạn có chắc muốn cấm người dùng này không?")) {
     db.ref("users/" + uid).remove()
-      .then(() => alert("✅ Đã cấm người dùng thành công!"))
+      .then(() => alert("✅ Đã cấm người dùng!"))
       .catch(err => alert("❌ Lỗi: " + err.message));
   }
 }
 
-// ========================
-// Xóa toàn bộ tin nhắn
-// ========================
+// ========== Xóa toàn bộ chat ==========
 clearBtn.onclick = () => {
-  const confirmDelete = confirm("⚠️ Bạn có chắc muốn xóa toàn bộ tin nhắn trong phòng công khai không?\nThao tác này KHÔNG thể hoàn tác!");
+  const confirmDelete = confirm("🧹 Bạn có chắc muốn xóa toàn bộ tin nhắn trong PHÒNG CHUNG không?\nThao tác này KHÔNG thể hoàn tác!");
   if (!confirmDelete) return;
 
   db.ref("rooms/public").remove()
-    .then(() => {
-      alert("🧹 Toàn bộ tin nhắn đã được xóa!");
-    })
-    .catch(err => {
-      alert("❌ Lỗi khi xóa: " + err.message);
-    });
+    .then(() => alert("✅ Đã xóa toàn bộ tin nhắn!"))
+    .catch(err => alert("❌ Lỗi khi xóa: " + err.message));
 };
 </script>
-
 </body>
 </html>
