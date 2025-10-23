@@ -2,56 +2,182 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel | ShynChat Secure v4.3</title>
+<title>Admin Panel | ShynChat Secure v5.0</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-database-compat.js"></script>
+
 <style>
-body{background:#0a0a0a;color:#fff;font-family:'Be Vietnam Pro',sans-serif;padding:20px;}
-table{width:100%;border-collapse:collapse;}
-th,td{padding:8px;border-bottom:1px solid #333;}
-th{color:#ff2e2e;}
-button{background:#ff2e2e;border:none;padding:5px 10px;color:#fff;border-radius:6px;cursor:pointer;}
+body {
+  background: #0a0a0a;
+  color: #fff;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  padding: 20px;
+  text-align: center;
+}
+h2 {
+  color: #ff2e2e;
+  text-shadow: 0 0 15px #ff0000;
+  margin-bottom: 10px;
+}
+button {
+  background: #ff2e2e;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  margin: 5px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+button:hover {
+  background: #ff5555;
+  box-shadow: 0 0 10px #ff2e2e;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #151515;
+  border-radius: 8px;
+  box-shadow: 0 0 15px #ff2e2e55;
+  margin-top: 20px;
+}
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #333;
+}
+th {
+  color: #ff2e2e;
+  background: #1a1a1a;
+}
+tr:hover {
+  background: rgba(255,255,255,0.05);
+}
+#clearBtn {
+  margin-top: 15px;
+  background: linear-gradient(90deg, #ff2e2e, #ff7a7a);
+}
 </style>
 </head>
 <body>
-<h2>🧩 ShynChat Admin Panel v4.3</h2>
-<div id="login"><button id="loginBtn">Đăng nhập Google</button></div>
-<div id="content" style="display:none;">
- <h3>Danh sách người dùng</h3>
- <table id="tbl"><tr><th>Tên</th><th>Email</th><th>Online</th><th>Hành động</th></tr></table>
-</div>
-<script>
-const firebaseConfig={apiKey:"AIzaSyDs3VrMSUnb7kl0MWYbMxnqR78anJ2SgJs",
-authDomain:"shynchat.firebaseapp.com",
-databaseURL:"https://shynchat-default-rtdb.asia-southeast1.firebasedatabase.app",
-projectId:"shynchat",storageBucket:"shynchat.firebasestorage.app",
-messagingSenderId:"180611398927",appId:"1:180611398927:web:2566534da0f8f6935f927a"};
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(),db=firebase.database(),provider=new firebase.auth.GoogleAuthProvider();
-const adminEmail="pn23070999@gmail.com";
-const loginBtn=document.getElementById("loginBtn"),loginDiv=document.getElementById("login"),
-content=document.getElementById("content"),tbl=document.getElementById("tbl");
 
-loginBtn.onclick=()=>auth.signInWithPopup(provider);
-auth.onAuthStateChanged(u=>{
- if(!u)return;
- if(u.email!==adminEmail){
-  alert("Truy cập bị từ chối!");auth.signOut();location.href="index.html";return;
- }
- loginDiv.style.display="none";content.style.display="block";
- db.ref("users").on("value",s=>{
-  tbl.innerHTML="<tr><th>Tên</th><th>Email</th><th>Online</th><th>Hành động</th></tr>";
-  s.forEach(c=>{
-   const u=c.val(),tr=document.createElement("tr");
-   tr.innerHTML=`<td>${u.name||""}</td><td>${u.email||""}</td>
-   <td>${u.online?"🟢":"🔴"}</td>
-   <td><button onclick="ban('${c.key}')">Ban</button></td>`;
-   tbl.appendChild(tr);
-  });
- });
+<h2>🧩 ShynChat Admin Panel v4.3.1</h2>
+<div id="login"><button id="loginBtn">Đăng nhập bằng Google</button></div>
+
+<div id="content" style="display:none;">
+  <h3>Danh sách người dùng</h3>
+  <table id="tbl">
+    <tr>
+      <th>Tên</th>
+      <th>Email</th>
+      <th>Online</th>
+      <th>Hành động</th>
+    </tr>
+  </table>
+  <button id="clearBtn">🧹 Xóa toàn bộ tin nhắn</button>
+</div>
+
+<script>
+// ========================
+// Firebase Config
+// ========================
+const firebaseConfig = {
+  apiKey: "AIzaSyDs3VrMSUnb7kl0MWYbMxnqR78anJ2SgJs",
+  authDomain: "shynchat.firebaseapp.com",
+  databaseURL: "https://shynchat-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "shynchat",
+  storageBucket: "shynchat.firebasestorage.app",
+  messagingSenderId: "180611398927",
+  appId: "1:180611398927:web:2566534da0f8f6935f927a"
+};
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.database();
+const provider = new firebase.auth.GoogleAuthProvider();
+
+const adminEmail = "pn23070999@gmail.com"; // Gmail admin cố định
+
+const loginBtn = document.getElementById("loginBtn");
+const loginDiv = document.getElementById("login");
+const contentDiv = document.getElementById("content");
+const table = document.getElementById("tbl");
+const clearBtn = document.getElementById("clearBtn");
+
+// ========================
+// Đăng nhập
+// ========================
+loginBtn.onclick = () => auth.signInWithPopup(provider);
+
+auth.onAuthStateChanged(user => {
+  if (!user) return;
+
+  // So sánh không phân biệt hoa thường
+  if (user.email.toLowerCase() !== adminEmail.toLowerCase()) {
+    alert("🚫 Truy cập bị từ chối! Bạn không có quyền Admin.");
+    auth.signOut();
+    location.href = "index.html";
+    return;
+  }
+
+  // Nếu đúng Admin
+  loginDiv.style.display = "none";
+  contentDiv.style.display = "block";
+  loadUsers();
 });
-function ban(id){if(confirm("Cấm user này?"))db.ref("users/"+id).remove();}
+
+// ========================
+// Hiển thị danh sách user
+// ========================
+function loadUsers() {
+  db.ref("users").on("value", snap => {
+    table.innerHTML = `
+      <tr>
+        <th>Tên</th>
+        <th>Email</th>
+        <th>Online</th>
+        <th>Hành động</th>
+      </tr>`;
+    snap.forEach(child => {
+      const u = child.val();
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${u.name || "(Không tên)"}</td>
+        <td>${u.email || "(Không email)"}</td>
+        <td>${u.online ? "🟢" : "🔴"}</td>
+        <td><button onclick="banUser('${child.key}')">Ban</button></td>`;
+      table.appendChild(tr);
+    });
+  });
+}
+
+// ========================
+// Ban người dùng
+// ========================
+function banUser(uid) {
+  if (confirm("Bạn có chắc muốn cấm người dùng này không?")) {
+    db.ref("users/" + uid).remove()
+      .then(() => alert("✅ Đã cấm người dùng thành công!"))
+      .catch(err => alert("❌ Lỗi: " + err.message));
+  }
+}
+
+// ========================
+// Xóa toàn bộ tin nhắn
+// ========================
+clearBtn.onclick = () => {
+  const confirmDelete = confirm("⚠️ Bạn có chắc muốn xóa toàn bộ tin nhắn trong phòng công khai không?\nThao tác này KHÔNG thể hoàn tác!");
+  if (!confirmDelete) return;
+
+  db.ref("rooms/public").remove()
+    .then(() => {
+      alert("🧹 Toàn bộ tin nhắn đã được xóa!");
+    })
+    .catch(err => {
+      alert("❌ Lỗi khi xóa: " + err.message);
+    });
+};
 </script>
+
 </body>
 </html>
