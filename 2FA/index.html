@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>ShynSuite 2FA Live</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at top, rgba(255, 0, 0, 0.2), transparent 55%),
+                radial-gradient(circle at bottom, #050509, #000);
+            color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wrapper {
+            position: relative;
+            background: radial-gradient(circle at top left, rgba(255, 30, 30, 0.15), rgba(10, 10, 10, 0.98));
+            border-radius: 18px;
+            padding: 22px 20px 22px;
+            width: 100%;
+            max-width: 430px;
+            box-shadow:
+                0 0 25px rgba(255, 0, 0, 0.25),
+                0 18px 40px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        /* viền neon mờ mờ góc card */
+        .wrapper::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(255, 0, 0, 0.22), transparent 55%),
+                radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.04), transparent 55%);
+            opacity: 0.9;
+            pointer-events: none;
+        }
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .logo-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 20%, #fff, #ff2b2b);
+            box-shadow:
+                0 0 12px rgba(255, 0, 0, 0.7),
+                0 0 35px rgba(255, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #000;
+        }
+
+        .logo-text {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            font-size: 1.05rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: #ff4b4b;
+            text-shadow:
+                0 0 6px rgba(255, 0, 0, 0.9),
+                0 0 14px rgba(255, 100, 100, 0.9);
+        }
+
+        h1 {
+            font-size: 1rem;
+            margin-bottom: 6px;
+            text-align: center;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        .subtitle {
+            font-size: 0.82rem;
+            color: #bbbbbb;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(0, 0, 0, 0.78);
+            color: #f5f5f5;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"]::placeholder {
+            color: #777;
+        }
+
+        input[type="text"]:focus {
+            border-color: #ff3b3b;
+            box-shadow:
+                0 0 0 1px rgba(255, 59, 59, 0.5),
+                0 0 14px rgba(255, 0, 0, 0.4);
+        }
+
+        .code-box {
+            margin-top: 18px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background:
+                linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(50, 7, 7, 0.95));
+            border: 1px solid rgba(255, 60, 60, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            cursor: pointer;
+            transition: transform 0.08s ease, box-shadow 0.1s ease, border 0.1s ease;
+        }
+
+        .code-box:hover {
+            transform: translateY(-1px);
+            box-shadow:
+                0 0 20px rgba(255, 0, 0, 0.55),
+                0 10px 30px rgba(0, 0, 0, 0.8);
+            border-color: #ff4444;
+        }
+
+        .code {
+            font-size: 1.9rem;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-shadow:
+                0 0 9px rgba(255, 90, 90, 0.9),
+                0 0 18px rgba(255, 0, 0, 0.7);
+            user-select: none;
+        }
+
+        .meta {
+            text-align: right;
+            font-size: 0.8rem;
+            color: #ccc;
+        }
+
+        .countdown {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .status {
+            margin-top: 10px;
+            font-size: 0.78rem;
+            color: #aaa;
+            min-height: 16px;
+        }
+
+        .status.error { color: #ff6b6b; }
+        .status.success { color: #7CFFB2; }
+
+        .footer {
+            margin-top: 14px;
+            font-size: 0.7rem;
+            text-align: center;
+            color: #666;
+        }
+
+        .footer span {
+            color: #ff5050;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="content">
+        <div class="logo-row">
+            <div class="logo-circle">S</div>
+            <div class="logo-text">ShynSuite</div>
+        </div>
+
+        <h1>2FA TOTP Live Generator</h1>
+        <div class="subtitle">
+            Nhập secret, mã 6 số tự nhảy mỗi 30 giây. Bấm vào mã để copy.
+        </div>
+
+        <label for="secretInput">Secret (Base32)</label>
+        <input id="secretInput" type="text"
+               placeholder="VD: JBSWY3DPEHPK3PXP (chuỗi A-Z &amp; 2-7)">
+
+        <div class="code-box" id="codeBox" title="Bấm để copy mã 2FA">
+            <div class="code" id="code">------</div>
+            <div class="meta">
+                <div>Còn: <span class="countdown" id="countdown">-</span>s</div>
+                <div style="margin-top: 4px; opacity: .7;">Thời gian hệ thống</div>
+                <div style="margin-top: 4px; font-size: 0.72rem; opacity: .8;">
+                    Bấm mã để copy
+                </div>
+            </div>
+        </div>
+
+        <div class="status" id="status">
+            Nhập secret 2FA (Base32) để bắt đầu.
+        </div>
+
+        <div class="footer">
+            <span>ShynSuite</span> 2FA • Chạy offline trong trình duyệt, không gửi secret lên server.
+        </div>
+    </div>
+</div>
+
+<script>
+    // Chuyển Base32 -> mảng byte
+    function base32ToBytes(base32) {
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+        const clean = base32.replace(/\s+/g, '').toUpperCase();
+        if (!clean) throw new Error("Secret không được để trống.");
+        let bits = "";
+        for (let i = 0; i < clean.length; i++) {
+            const val = alphabet.indexOf(clean[i]);
+            if (val === -1) {
+                throw new Error("Secret chỉ được chứa A-Z và 2-7 (Base32).");
+            }
+            bits += val.toString(2).padStart(5, "0");
+        }
+        const bytes = [];
+        for (let i = 0; i + 8 <= bits.length; i += 8) {
+            bytes.push(parseInt(bits.substring(i, i + 8), 2));
+        }
+        return new Uint8Array(bytes);
+    }
+
+    // Tạo mã TOTP 6 số, step = 30s, SHA-1 HMAC
+    async function generateTOTP(secretBase32, time = Date.now()) {
+        if (!window.crypto || !window.crypto.subtle) {
+            throw new Error("Trình duyệt không hỗ trợ Web Crypto API (crypto.subtle).");
+        }
+
+        const keyBytes = base32ToBytes(secretBase32);
+        const counter = Math.floor(time / 1000 / 30); // 30s/step
+
+        const counterBuf = new ArrayBuffer(8);
+        const view = new DataView(counterBuf);
+        const high = Math.floor(counter / 0x100000000);
+        const low = counter & 0xffffffff;
+        view.setUint32(0, high);
+        view.setUint32(4, low);
+
+        const cryptoKey = await crypto.subtle.importKey(
+            "raw",
+            keyBytes,
+            { name: "HMAC", hash: "SHA-1" },
+            false,
+            ["sign"]
+        );
+
+        const sig = await crypto.subtle.sign("HMAC", cryptoKey, counterBuf);
+        const hmac = new Uint8Array(sig);
+
+        const offset = hmac[hmac.length - 1] & 0x0f;
+        const binCode =
+            ((hmac[offset] & 0x7f) << 24) |
+            ((hmac[offset + 1] & 0xff) << 16) |
+            ((hmac[offset + 2] & 0xff) << 8) |
+            (hmac[offset + 3] & 0xff);
+
+        const otp = (binCode % 1000000).toString().padStart(6, "0");
+        return otp;
+    }
+
+    const secretInput = document.getElementById("secretInput");
+    const codeEl = document.getElementById("code");
+    const countdownEl = document.getElementById("countdown");
+    const statusEl = document.getElementById("status");
+    const codeBox = document.getElementById("codeBox");
+
+    let currentSecret = "";
+
+    function setStatus(msg, type = "") {
+        statusEl.textContent = msg || "";
+        statusEl.classList.remove("error", "success");
+        if (type) statusEl.classList.add(type);
+    }
+
+    function getTimeLeft() {
+        const now = Date.now();
+        const step = 30;
+        const secs = Math.floor(now / 1000);
+        return step - (secs % step);
+    }
+
+    secretInput.addEventListener("input", () => {
+        currentSecret = secretInput.value.trim();
+        if (!currentSecret) {
+            codeEl.textContent = "------";
+            countdownEl.textContent = "-";
+            setStatus("Nhập secret 2FA (Base32) để bắt đầu.", "");
+        } else {
+            setStatus("Đang tạo mã live theo thời gian hệ thống...", "");
+        }
+    });
+
+    async function tick() {
+        const left = getTimeLeft();
+        countdownEl.textContent = left;
+
+        if (!currentSecret) return;
+
+        try {
+            const otp = await generateTOTP(currentSecret, Date.now());
+            codeEl.textContent = otp;
+        } catch (e) {
+            codeEl.textContent = "------";
+            setStatus(e.message || "Secret không hợp lệ.", "error");
+        }
+    }
+
+    // Bấm mã để copy
+    codeBox.addEventListener("click", async () => {
+        const text = codeEl.textContent.trim();
+        if (!/^\d{6}$/.test(text)) {
+            setStatus("Không có mã hợp lệ để copy.", "error");
+            return;
+        }
+
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(text);
+                setStatus("Đã copy mã 2FA vào clipboard.", "success");
+            } else {
+                // fallback cũ
+                const textarea = document.createElement("textarea");
+                textarea.value = text;
+                textarea.style.position = "fixed";
+                textarea.style.left = "-9999px";
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                document.execCommand("copy");
+                document.body.removeChild(textarea);
+                setStatus("Đã copy mã 2FA vào clipboard (fallback).", "success");
+            }
+        } catch (err) {
+            console.error(err);
+            setStatus("Không copy được mã. Hãy copy thủ công.", "error");
+        }
+    });
+
+    setInterval(tick, 1000);
+    tick();
+</script>
+</body>
+</html>
