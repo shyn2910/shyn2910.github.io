@@ -14,249 +14,177 @@
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{
+            font-family:'Be Vietnam Pro',sans-serif;
+            background:#05070a;
+            color:#e5e7eb;
+            min-height:100vh;
+        }
+        .page{
+            max-width:1200px;
+            margin:0 auto;
+            padding:24px 16px 32px;
+        }
+        header h1{
+            font-size:2.2rem;
+            font-weight:700;
+            margin-bottom:6px;
+        }
+        header p{
+            font-size:.95rem;
+            color:#9ca3af;
+        }
+        .card{
+            background:#0b1120;
+            border-radius:18px;
+            border:1px solid rgba(75,85,99,.7);
+            box-shadow:0 0 25px rgba(34,197,94,.08),
+                       0 0 40px rgba(15,23,42,.9);
+            padding:18px 20px;
+        }
+        .card+.card{margin-top:18px}
+
+        .ip-card-header{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:10px;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+        .ip-card-header .left{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            font-weight:600;
+        }
+        .ip-card-header .left i{
+            width:26px;height:26px;border-radius:999px;
+            background:rgba(16,185,129,.12);
+            color:#22c55e;
+            display:flex;align-items:center;justify-content:center;
+            font-size:.9rem;
+        }
+        .btn-ghost{
+            border-radius:999px;
+            border:1px solid rgba(148,163,184,.6);
+            background:#020617;
+            color:#e5e7eb;
+            padding:7px 13px;
+            font-size:.8rem;
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            cursor:pointer;
+            transition:all .15s ease;
+        }
+        .btn-ghost i{font-size:.85rem}
+        .btn-ghost:hover{
+            border-color:#22c55e;
+            box-shadow:0 0 14px rgba(34,197,94,.5);
+        }
+        .ip-value{
+            text-align:center;
+            padding:24px 10px 10px;
+        }
+        .ip-value span{
+            font-size:2.1rem;
+            font-weight:700;
+            color:#4ade80;
+            text-shadow:0 0 16px rgba(34,197,94,.9);
+        }
+        .ip-extra{
+            margin-top:6px;
+            text-align:center;
+            font-size:.9rem;
+            color:#9ca3af;
+        }
+        .ip-extra a{color:#22c55e;text-decoration:none}
+        .ip-extra a:hover{text-decoration:underline}
+
+        .bottom-grid{
+            display:grid;
+            grid-template-columns:1.1fr 1.1fr;
+            gap:16px;
+            margin-top:18px;
+        }
+        .section-title{
+            font-size:1rem;
+            font-weight:600;
+            margin-bottom:14px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+        .section-title i{
+            width:26px;height:26px;border-radius:999px;
+            background:rgba(96,165,250,.16);
+            display:flex;align-items:center;justify-content:center;
+            color:#38bdf8;
+            font-size:.9rem;
+        }
+        .info-table{width:100%;border-collapse:collapse}
+        .info-row{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:8px 0;
+            border-bottom:1px solid rgba(31,41,55,.9);
+            font-size:.9rem;
+        }
+        .info-row:last-child{border-bottom:none}
+        .info-label{color:#9ca3af}
+        .info-value{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            font-weight:500;
+        }
+        .info-value button{
+            border:none;
+            background:transparent;
+            color:#6b7280;
+            cursor:pointer;
+            font-size:.85rem;
+        }
+        .info-value button:hover{color:#22c55e}
+
+        #map{
+            width:100%;
+            height:320px;
+            border-radius:14px;
+            overflow:hidden;
+            border:1px solid rgba(55,65,81,.9);
+        }
+        .map-card{display:flex;flex-direction:column;gap:10px}
+        .note{
+            margin-top:8px;
+            font-size:.8rem;
+            color:#6b7280;
         }
 
-        body {
-            font-family: 'Be Vietnam Pro', sans-serif;
-            background: #05070a;
-            color: #e5e7eb;
-            min-height: 100vh;
+        .toast{
+            position:fixed;
+            right:16px;
+            bottom:16px;
+            background:#020617;
+            border-radius:999px;
+            padding:8px 14px;
+            border:1px solid rgba(34,197,94,.72);
+            box-shadow:0 0 16px rgba(34,197,94,.8);
+            font-size:.8rem;
+            color:#e5e7eb;
+            display:none;
+            align-items:center;
+            gap:8px;
+            z-index:9999;
         }
+        .toast i{color:#4ade80}
 
-        .page {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 24px 16px 32px;
-        }
-
-        header h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-
-        header p {
-            font-size: 0.95rem;
-            color: #9ca3af;
-        }
-
-        .card {
-            background: #0b1120;
-            border-radius: 18px;
-            border: 1px solid rgba(75, 85, 99, 0.7);
-            box-shadow:
-                    0 0 25px rgba(34, 197, 94, 0.08),
-                    0 0 40px rgba(15, 23, 42, 0.9);
-            padding: 18px 20px;
-        }
-
-        .card + .card {
-            margin-top: 18px;
-        }
-
-        /* IP section */
-        .ip-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .ip-card-header .left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-        }
-
-        .ip-card-header .left i {
-            width: 26px;
-            height: 26px;
-            border-radius: 999px;
-            background: rgba(16, 185, 129, 0.12);
-            color: #22c55e;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-        }
-
-        .btn-ghost {
-            border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.6);
-            background: #020617;
-            color: #e5e7eb;
-            padding: 7px 13px;
-            font-size: 0.8rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        .btn-ghost i {
-            font-size: 0.85rem;
-        }
-
-        .btn-ghost:hover {
-            border-color: #22c55e;
-            box-shadow: 0 0 14px rgba(34, 197, 94, 0.5);
-        }
-
-        .ip-value {
-            text-align: center;
-            padding: 24px 10px 10px;
-        }
-
-        .ip-value span {
-            font-size: 2.1rem;
-            font-weight: 700;
-            color: #4ade80;
-            text-shadow: 0 0 16px rgba(34, 197, 94, 0.9);
-        }
-
-        .ip-extra {
-            margin-top: 6px;
-            text-align: center;
-            font-size: 0.9rem;
-            color: #9ca3af;
-        }
-
-        .ip-extra a {
-            color: #22c55e;
-            text-decoration: none;
-        }
-
-        .ip-extra a:hover {
-            text-decoration: underline;
-        }
-
-        /* Layout for bottom section */
-        .bottom-grid {
-            display: grid;
-            grid-template-columns: 1.1fr 1.1fr;
-            gap: 16px;
-            margin-top: 18px;
-        }
-
-        .section-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .section-title i {
-            width: 26px;
-            height: 26px;
-            border-radius: 999px;
-            background: rgba(96, 165, 250, 0.16);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #38bdf8;
-            font-size: 0.9rem;
-        }
-
-        /* Location info table */
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .info-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(31, 41, 55, 0.9);
-            font-size: 0.9rem;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            color: #9ca3af;
-        }
-
-        .info-value {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-        }
-
-        .info-value button {
-            border: none;
-            background: transparent;
-            color: #6b7280;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-
-        .info-value button:hover {
-            color: #22c55e;
-        }
-
-        /* Map */
-        #map {
-            width: 100%;
-            height: 320px;
-            border-radius: 14px;
-            overflow: hidden;
-            border: 1px solid rgba(55,65,81,0.9);
-        }
-
-        .map-card {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .note {
-            margin-top: 8px;
-            font-size: 0.8rem;
-            color: #6b7280;
-        }
-
-        .toast {
-            position: fixed;
-            right: 16px;
-            bottom: 16px;
-            background: #020617;
-            border-radius: 999px;
-            padding: 8px 14px;
-            border: 1px solid rgba(34, 197, 94, 0.72);
-            box-shadow: 0 0 16px rgba(34, 197, 94, 0.8);
-            font-size: 0.8rem;
-            color: #e5e7eb;
-            display: none;
-            align-items: center;
-            gap: 8px;
-            z-index: 9999;
-        }
-
-        .toast i {
-            color: #4ade80;
-        }
-
-        @media (max-width: 900px) {
-            .bottom-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .ip-value span {
-                font-size: 1.7rem;
-            }
+        @media(max-width:900px){
+            .bottom-grid{grid-template-columns:1fr}
+            .ip-value span{font-size:1.7rem}
         }
     </style>
 </head>
@@ -264,7 +192,7 @@
 <div class="page">
     <header>
         <h1>IP của tôi là gì?</h1>
-        <p>Kiểm tra địa chỉ IP công cộng và xem thông tin chi tiết về mạng & vị trí hiện tại của bạn.</p>
+        <p>Kiểm tra địa chỉ IP công cộng và xem thông tin chi tiết về mạng &amp; vị trí hiện tại của bạn.</p>
     </header>
 
     <!-- IP card -->
@@ -274,14 +202,12 @@
                 <i class="fas fa-globe"></i>
                 <span>Địa chỉ IP của bạn</span>
             </div>
-            <div class="right">
+            <div class="right" style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="btn-ghost" id="btnRefresh">
-                    <i class="fas fa-rotate-right"></i>
-                    Làm mới
+                    <i class="fas fa-rotate-right"></i>Làm mới
                 </button>
                 <button class="btn-ghost" id="btnCopyIp">
-                    <i class="far fa-clipboard"></i>
-                    Sao chép IP
+                    <i class="far fa-clipboard"></i>Sao chép IP
                 </button>
             </div>
         </div>
@@ -295,7 +221,7 @@
         </div>
     </div>
 
-    <!-- Bottom sections -->
+    <!-- Bottom -->
     <div class="bottom-grid">
         <!-- Location info -->
         <div class="card">
@@ -344,7 +270,7 @@
 
             <div class="note">
                 <i class="fas fa-circle-info"></i>
-                Thông tin trên chỉ mang tính ước lượng, được xác định từ địa chỉ IP công cộng của bạn.
+                Thông tin chỉ mang tính ước lượng, dựa trên IP công cộng của bạn.
             </div>
         </div>
 
@@ -359,7 +285,6 @@
     </div>
 </div>
 
-<!-- Toast copy -->
 <div class="toast" id="toast">
     <i class="fas fa-check-circle"></i>
     <span>Đã sao chép vào clipboard!</span>
@@ -367,7 +292,8 @@
 
 <!-- Scripts -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
 
 <script>
     const ipText = document.getElementById('ipText');
@@ -385,100 +311,97 @@
 
     let map, marker;
 
-    // Khởi tạo map mặc định
     function initMap() {
         map = L.map('map').setView([0, 0], 2);
-
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+            attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
-
         marker = L.marker([0, 0]).addTo(map);
     }
 
-    // Hiển thị toast
     function showToast(msg) {
         toast.querySelector('span').textContent = msg || 'Đã sao chép vào clipboard!';
         toast.style.display = 'flex';
         setTimeout(() => toast.style.display = 'none', 1500);
     }
 
-    // Copy text bất kỳ
     function copyText(text) {
         if (!text) return;
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(() => showToast());
         } else {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            textarea.focus();
-            textarea.select();
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
             document.execCommand('copy');
-            document.body.removeChild(textarea);
+            document.body.removeChild(ta);
             showToast();
         }
     }
 
-    // Gọi API lấy IP & vị trí
+    // Dùng API https://ipwho.is/ cho ổn định hơn
     async function loadIpInfo() {
         ipText.textContent = 'Đang tải...';
         ispText.textContent = 'Đang xử lý...';
         asnText.textContent = '–';
 
         try {
-            // API ipapi.co – không cần key, free basic
-            const res = await fetch('https://ipapi.co/json/');
-            if (!res.ok) throw new Error('Không lấy được IP');
+            const res = await fetch('https://ipwho.is/');
             const data = await res.json();
 
-            const ip = data.ip;
-            const isp = data.org || 'Không rõ';
-            const asn = data.asn || 'Không rõ';
-            const country = `${data.country_name || '-'} (${data.country || ''})`;
-            const city = data.city || '-';
-            const region = data.region || '-';
-            const postal = data.postal || '-';
-            const lat = data.latitude;
-            const lon = data.longitude;
+            if (!data || data.success === false) {
+                throw new Error('API trả về lỗi');
+            }
+
+            const ip = data.ip || 'Không rõ';
+            const isp = (data.connection && data.connection.isp) || 'Không rõ';
+            const asn = (data.connection && data.connection.asn) || 'Không rõ';
 
             ipText.textContent = ip;
             ispText.textContent = isp;
             asnText.textContent = asn;
+
+            const country = (data.country || '-') + (data.country_code ? ` (${data.country_code})` : '');
+            const city = data.city || '-';
+            const region = data.region || data.region_name || '-';
+            const postal = data.postal || '-';
+            const lat = data.latitude;
+            const lon = data.longitude;
 
             countryText.textContent = country;
             cityText.textContent = city;
             regionText.textContent = region;
             postalText.textContent = postal;
 
-            if (lat && lon) {
+            if (typeof lat === 'number' && typeof lon === 'number') {
                 coordText.textContent = lat.toFixed(5) + ', ' + lon.toFixed(5);
                 map.setView([lat, lon], 13);
                 marker.setLatLng([lat, lon]);
             } else {
                 coordText.textContent = '–';
+                map.setView([0, 0], 2);
+                marker.setLatLng([0, 0]);
             }
-
         } catch (e) {
+            console.error(e);
             ipText.textContent = 'Không thể lấy IP';
             ispText.textContent = 'Lỗi kết nối API';
             asnText.textContent = '–';
-            countryText.textContent = cityText.textContent =
-                regionText.textContent = postalText.textContent =
-                    coordText.textContent = '–';
-            console.error(e);
+            countryText.textContent =
+                cityText.textContent =
+                regionText.textContent =
+                postalText.textContent =
+                coordText.textContent = '–';
         }
     }
 
-    // Sự kiện
     btnCopyIp.addEventListener('click', () => copyText(ipText.textContent));
-
-    btnRefresh.addEventListener('click', () => {
-        loadIpInfo();
-    });
+    btnRefresh.addEventListener('click', () => loadIpInfo());
 
     document.querySelectorAll('[data-copy-target]').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -488,7 +411,6 @@
         });
     });
 
-    // Khởi động
     initMap();
     loadIpInfo();
 </script>
