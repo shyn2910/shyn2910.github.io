@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tính Ngày | ShynSuite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Font + Icon -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{
+            font-family:'Be Vietnam Pro',sans-serif;
+            background:#05070a;
+            color:#e5e7eb;
+            min-height:100vh;
+            display:flex;
+            flex-direction:column;
+        }
+
+        /* Topbar ShynSuite */
+        .topbar{
+            width:100%;
+            background:radial-gradient(circle at top,#111827,#020617 60%);
+            border-bottom:1px solid rgba(55,65,81,0.9);
+            box-shadow:0 0 25px rgba(15,23,42,0.9);
+        }
+        .topbar-inner{
+            max-width:1200px;
+            margin:0 auto;
+            padding:10px 16px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+        }
+        .brand{
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+        .brand-logo{
+            width:30px;
+            height:30px;
+            border-radius:999px;
+            border:1px solid rgba(248,250,252,0.1);
+            background:radial-gradient(circle,#22c55e 0%,#16a34a 30%,transparent 70%);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#f9fafb;
+            font-weight:700;
+            font-size:0.9rem;
+            box-shadow:0 0 18px rgba(34,197,94,0.9);
+        }
+        .brand-text-main{
+            font-size:1rem;
+            font-weight:700;
+            letter-spacing:0.05em;
+            color:#f9fafb;
+            text-shadow:0 0 10px rgba(34,197,94,0.8);
+        }
+        .brand-text-sub{
+            font-size:0.75rem;
+            color:#9ca3af;
+        }
+        .topbar-right{
+            font-size:0.8rem;
+            color:#9ca3af;
+            display:flex;
+            align-items:center;
+            gap:6px;
+        }
+        .topbar-right i{
+            color:#22c55e;
+        }
+
+        .page{
+            max-width:1200px;
+            margin:0 auto;
+            padding:20px 16px 32px;
+            flex:1 0 auto;
+            width:100%;
+        }
+        header h1{
+            font-size:2.2rem;
+            font-weight:700;
+            margin-bottom:4px;
+            text-shadow:0 0 14px rgba(34,197,94,0.7);
+        }
+        header p{
+            font-size:.95rem;
+            color:#9ca3af;
+        }
+        .card{
+            background:#020617;
+            border-radius:18px;
+            border:1px solid rgba(55,65,81,.9);
+            box-shadow:
+                0 0 25px rgba(15,23,42,0.9),
+                0 0 30px rgba(34,197,94,0.08);
+            padding:18px 20px 20px;
+            margin-top:18px;
+        }
+
+        /* Tabs */
+        .tabs{
+            display:flex;
+            border-radius:12px;
+            overflow:hidden;
+            background:#020617;
+            border:1px solid rgba(55,65,81,1);
+            margin-bottom:18px;
+        }
+        .tab-btn{
+            flex:1;
+            padding:10px 14px;
+            font-size:.9rem;
+            border:none;
+            background:transparent;
+            color:#9ca3af;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:6px;
+            cursor:pointer;
+            transition:all .15s ease;
+        }
+        .tab-btn i{font-size:.9rem}
+        .tab-btn.active{
+            background:linear-gradient(90deg,#22c55e,#16a34a);
+            color:#022c22;
+            font-weight:600;
+            box-shadow:0 0 18px rgba(34,197,94,0.8);
+        }
+        .tab-btn:not(.active):hover{
+            background:rgba(15,23,42,.85);
+        }
+
+        /* Form layout */
+        .form-grid-2{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:16px;
+            margin-bottom:16px;
+        }
+        .field{
+            display:flex;
+            flex-direction:column;
+            gap:4px;
+        }
+        .field label{
+            font-size:.85rem;
+            color:#9ca3af;
+        }
+        .field input[type="text"],
+        .field input[type="date"],
+        .field input[type="time"]{
+            padding:9px 10px;
+            border-radius:10px;
+            border:1px solid rgba(75,85,99,.9);
+            background:#020617;
+            color:#e5e7eb;
+            outline:none;
+            font-size:.9rem;
+        }
+        .field input:focus{
+            border-color:#38bdf8;
+            box-shadow:0 0 15px rgba(56,189,248,.45);
+        }
+        .actions{
+            margin-top:8px;
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+        .btn-main{
+            border:none;
+            border-radius:999px;
+            padding:10px 16px;
+            background:linear-gradient(90deg,#22c55e,#16a34a);
+            color:#052e16;
+            font-weight:600;
+            font-size:.9rem;
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            cursor:pointer;
+            box-shadow:0 0 16px rgba(34,197,94,0.7),
+                       0 0 30px rgba(22,163,74,0.8);
+            transition:transform .1s ease,box-shadow .1s ease,filter .1s ease;
+        }
+        .btn-main i{font-size:.9rem}
+        .btn-main:hover{filter:brightness(1.06);transform:translateY(-1px)}
+        .btn-main:active{transform:translateY(1px) scale(.98)}
+        .btn-secondary{
+            border-radius:999px;
+            border:1px solid rgba(148,163,184,.6);
+            background:#020617;
+            color:#e5e7eb;
+            padding:9px 14px;
+            font-size:.85rem;
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            cursor:pointer;
+        }
+        .btn-secondary:hover{
+            border-color:#22c55e;
+            box-shadow:0 0 12px rgba(34,197,94,0.4);
+        }
+
+        /* Result boxes */
+        .result-section{
+            margin-top:18px;
+        }
+        .result-title{
+            font-size:1rem;
+            font-weight:600;
+            margin-bottom:12px;
+        }
+        .result-cards{
+            display:grid;
+            grid-template-columns:repeat(3,minmax(0,1fr));
+            gap:14px;
+        }
+        .result-card{
+            background:#020617;
+            border-radius:14px;
+            border:1px solid rgba(31,41,55,1);
+            padding:14px 12px 16px;
+            text-align:center;
+        }
+        .result-card-main{
+            font-size:1.6rem;
+            font-weight:700;
+            color:#4ade80;
+        }
+        .result-card-label{
+            margin-top:4px;
+            font-size:.85rem;
+            color:#9ca3af;
+        }
+        .result-subgrid{
+            display:grid;
+            grid-template-columns:repeat(3,minmax(0,1fr));
+            gap:16px;
+            margin-top:16px;
+        }
+        .info-row{
+            display:flex;
+            flex-direction:column;
+            background:#020617;
+            border-radius:14px;
+            border:1px solid rgba(31,41,55,1);
+            padding:12px;
+            text-align:center;
+            gap:4px;
+        }
+        .info-label{
+            font-size:.85rem;
+            color:#9ca3af;
+        }
+        .info-value{
+            font-weight:600;
+            font-size:1.1rem;
+        }
+        .copy-btn-small{
+            border:none;
+            background:transparent;
+            color:#9ca3af;
+            cursor:pointer;
+            font-size:.8rem;
+            display:inline-flex;
+            align-items:center;
+            gap:4px;
+            justify-content:center;
+        }
+        .copy-btn-small:hover{color:#22c55e}
+
+        /* Countdown specific */
+        .countdown-display{
+            display:grid;
+            grid-template-columns:repeat(4,minmax(0,1fr));
+            gap:14px;
+            margin-top:14px;
+        }
+        .count-box{
+            background:#020617;
+            border:1px solid rgba(31,41,55,1);
+            border-radius:14px;
+            padding:12px 8px;
+            text-align:center;
+        }
+        .count-main{
+            font-size:1.6rem;
+            font-weight:700;
+            color:#4ade80;
+        }
+        .count-label{
+            margin-top:4px;
+            font-size:.8rem;
+            color:#9ca3af;
+        }
+        .count-note{
+            margin-top:10px;
+            font-size:.85rem;
+            color:#9ca3af;
+        }
+
+        /* Toast */
+        .toast{
+            position:fixed;
+            right:16px;
+            bottom:16px;
+            background:#020617;
+            border-radius:999px;
+            padding:8px 14px;
+            border:1px solid rgba(34,197,94,.72);
+            box-shadow:0 0 16px rgba(34,197,94,.8);
+            font-size:.8rem;
+            color:#e5e7eb;
+            display:none;
+            align-items:center;
+            gap:8px;
+            z-index:9999;
+        }
+        .toast i{color:#4ade80}
+
+        /* Footer */
+        footer{
+            border-top:1px solid rgba(31,41,55,1);
+            background:#020617;
+            padding:10px 16px;
+            text-align:center;
+            font-size:.8rem;
+            color:#6b7280;
+            flex-shrink:0;
+        }
+        footer span{
+            color:#9ca3af;
+        }
+
+        @media(max-width:900px){
+            .page{padding:16px 12px 24px}
+            .result-cards{grid-template-columns:1fr}
+            .result-subgrid{grid-template-columns:1fr}
+            .countdown-display{grid-template-columns:repeat(2,minmax(0,1fr))}
+        }
+    </style>
+</head>
+<body>
+<!-- TOPBAR SHYNSUITE -->
+<div class="topbar">
+    <div class="topbar-inner">
+        <div class="brand">
+            <div class="brand-logo">S</div>
+            <div>
+                <div class="brand-text-main">ShynSuite</div>
+                <div class="brand-text-sub">Công cụ tính ngày &amp; thời gian</div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <i class="fa-solid fa-circle"></i>
+            <span>Dark Neon Mode</span>
+        </div>
+    </div>
+</div>
+
+<div class="page">
+    <header>
+        <h1>Tính Ngày</h1>
+        <p>Tính khoảng cách giữa các ngày, đếm ngược đến sự kiện và tìm hiểu tuổi chính xác của bạn.</p>
+    </header>
+
+    <div class="card">
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="countdown">
+                <i class="fa-regular fa-clock"></i> Đếm Ngược
+            </button>
+            <button class="tab-btn" data-tab="difference">
+                <i class="fa-regular fa-calendar"></i> Khoảng Cách Ngày
+            </button>
+            <button class="tab-btn" data-tab="age">
+                <i class="fa-regular fa-face-smile"></i> Tính Tuổi
+            </button>
+        </div>
+
+        <!-- ĐẾM NGƯỢC -->
+        <div id="tab-countdown" class="tab-content">
+            <div class="form-grid-2">
+                <div class="field">
+                    <label for="eventName">Tên Sự Kiện</label>
+                    <input type="text" id="eventName" placeholder="Sinh nhật của tôi">
+                </div>
+                <div class="field">
+                    <label for="eventTime">Giờ Sự Kiện</label>
+                    <input type="time" id="eventTime" value="12:00">
+                </div>
+            </div>
+            <div class="form-grid-2">
+                <div class="field">
+                    <label for="eventDate">Ngày Sự Kiện</label>
+                    <input type="date" id="eventDate">
+                </div>
+                <div></div>
+            </div>
+            <div class="actions">
+                <button class="btn-main" id="btnCountdownCalc">
+                    <i class="fa-solid fa-play"></i> Tính Toán
+                </button>
+                <button class="btn-secondary" id="btnCountdownReset">
+                    <i class="fa-solid fa-rotate-left"></i> Đặt Lại
+                </button>
+            </div>
+
+            <div class="result-section" id="countdownResult" style="display:none;">
+                <div class="result-title" id="countdownTitle"></div>
+                <div class="countdown-display">
+                    <div class="count-box">
+                        <div class="count-main" id="cdDays">0</div>
+                        <div class="count-label">ngày</div>
+                    </div>
+                    <div class="count-box">
+                        <div class="count-main" id="cdHours">0</div>
+                        <div class="count-label">giờ</div>
+                    </div>
+                    <div class="count-box">
+                        <div class="count-main" id="cdMinutes">0</div>
+                        <div class="count-label">phút</div>
+                    </div>
+                    <div class="count-box">
+                        <div class="count-main" id="cdSeconds">0</div>
+                        <div class="count-label">giây</div>
+                    </div>
+                </div>
+                <div class="count-note" id="countdownNote"></div>
+            </div>
+        </div>
+
+        <!-- KHOẢNG CÁCH NGÀY -->
+        <div id="tab-difference" class="tab-content" style="display:none;">
+            <div class="form-grid-2">
+                <div class="field">
+                    <label for="startDate">Ngày Bắt Đầu</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="field">
+                    <label for="endDate">Ngày Kết Thúc</label>
+                    <input type="date" id="endDate">
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn-main" id="btnDiffCalc">
+                    <i class="fa-solid fa-calculator"></i> Tính Toán
+                </button>
+                <button class="btn-secondary" id="btnDiffReset">
+                    <i class="fa-solid fa-rotate-left"></i> Đặt Lại
+                </button>
+            </div>
+
+            <div class="result-section" id="diffResult" style="display:none;">
+                <div class="result-title">Khoảng Cách Giữa Hai Ngày</div>
+                <div class="result-cards">
+                    <div class="result-card">
+                        <div class="result-card-main" id="diffDays">0</div>
+                        <div class="result-card-label">tổng số ngày</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-card-main" id="diffWeeks">0</div>
+                        <div class="result-card-label">tuần (xấp xỉ)</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-card-main" id="diffHours">0</div>
+                        <div class="result-card-label">tổng số giờ</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TÍNH TUỔI -->
+        <div id="tab-age" class="tab-content" style="display:none;">
+            <div class="form-grid-2">
+                <div class="field">
+                    <label for="birthDate">Ngày Sinh</label>
+                    <input type="date" id="birthDate">
+                </div>
+                <div class="field">
+                    <label for="birthTime">Giờ Sinh (Tùy chọn)</label>
+                    <input type="time" id="birthTime">
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn-main" id="btnAgeCalc">
+                    <i class="fa-solid fa-cake-candles"></i> Tính Toán
+                </button>
+                <button class="btn-secondary" id="btnAgeReset">
+                    <i class="fa-solid fa-rotate-left"></i> Đặt Lại
+                </button>
+                <button class="btn-secondary" id="btnAgeCopy">
+                    <i class="fa-regular fa-clipboard"></i> Sao Chép Kết Quả
+                </button>
+            </div>
+
+            <div class="result-section" id="ageResult" style="display:none;">
+                <div class="result-title">Tuổi Của Bạn</div>
+                <div class="result-cards">
+                    <div class="result-card">
+                        <div class="result-card-main" id="ageYears">0</div>
+                        <div class="result-card-label">tuổi</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-card-main" id="ageMonths">0</div>
+                        <div class="result-card-label">tháng</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-card-main" id="ageDays">0</div>
+                        <div class="result-card-label">ngày</div>
+                    </div>
+                </div>
+
+                <div class="result-subgrid">
+                    <div class="info-row">
+                        <span class="info-label">Tổng Số Ngày Đã Sống</span>
+                        <span class="info-value" id="totalDays">0</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Tổng Số Giờ Đã Sống</span>
+                        <span class="info-value" id="totalHours">0</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Tổng Số Phút Đã Sống</span>
+                        <span class="info-value" id="totalMinutes">0</span>
+                    </div>
+                </div>
+
+                <div class="result-subgrid" style="margin-top:16px;">
+                    <div class="info-row">
+                        <span class="info-label">Sinh Nhật Tiếp Theo</span>
+                        <span class="info-value" id="nextBirthday">–</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Số Ngày Đến Sinh Nhật</span>
+                        <span class="info-value" id="daysToBirthday">0</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Tóm tắt</span>
+                        <button class="copy-btn-small" id="btnAgeCopySmall">
+                            <i class="fa-regular fa-copy"></i> Sao chép
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <span>Created by ShynMMO ©2025</span>
+</footer>
+
+<div class="toast" id="toast">
+    <i class="fa-solid fa-check-circle"></i>
+    <span>Đã sao chép vào clipboard!</span>
+</div>
+
+<script>
+    // ---- TAB SWITCH ----
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = {
+        countdown: document.getElementById('tab-countdown'),
+        difference: document.getElementById('tab-difference'),
+        age: document.getElementById('tab-age')
+    };
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            tabButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            Object.keys(tabContents).forEach(k => {
+                tabContents[k].style.display = (k === tab) ? 'block' : 'none';
+            });
+        });
+    });
+
+    // ---- TOAST ----
+    const toastEl = document.getElementById('toast');
+    function showToast(msg){
+        toastEl.querySelector('span').textContent = msg || 'Đã sao chép vào clipboard!';
+        toastEl.style.display = 'flex';
+        setTimeout(()=> toastEl.style.display = 'none',1500);
+    }
+
+    // ---- UTIL ----
+    function parseDate(value){
+        if(!value) return null;
+        const d = new Date(value);
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    function copyText(text){
+        if(!text) return;
+        if(navigator.clipboard && window.isSecureContext){
+            navigator.clipboard.writeText(text).then(()=>showToast());
+        }else{
+            const ta=document.createElement('textarea');
+            ta.value=text;
+            ta.style.position='fixed';
+            ta.style.opacity='0';
+            document.body.appendChild(ta);
+            ta.focus();ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast();
+        }
+    }
+
+    // ---- ĐẾM NGƯỢC ----
+    const eventNameInput = document.getElementById('eventName');
+    const eventDateInput = document.getElementById('eventDate');
+    const eventTimeInput = document.getElementById('eventTime');
+    const countdownResult = document.getElementById('countdownResult');
+    const countdownTitle = document.getElementById('countdownTitle');
+    const countdownNote = document.getElementById('countdownNote');
+    const cdDays = document.getElementById('cdDays');
+    const cdHours = document.getElementById('cdHours');
+    const cdMinutes = document.getElementById('cdMinutes');
+    const cdSeconds = document.getElementById('cdSeconds');
+    let countdownTimer = null;
+    let targetTime = null;
+
+    function updateCountdown(){
+        if(!targetTime) return;
+        const now = new Date();
+        let diff = targetTime.getTime() - now.getTime();
+        const past = diff < 0;
+        diff = Math.abs(diff);
+
+        const totalSeconds = Math.floor(diff/1000);
+        const days = Math.floor(totalSeconds/(24*3600));
+        const hours = Math.floor((totalSeconds%(24*3600))/3600);
+        const minutes = Math.floor((totalSeconds%3600)/60);
+        const seconds = totalSeconds%60;
+
+        cdDays.textContent = days;
+        cdHours.textContent = hours;
+        cdMinutes.textContent = minutes;
+        cdSeconds.textContent = seconds;
+
+        countdownNote.textContent = past
+            ? 'Sự kiện này đã diễn ra ' + days + ' ngày trước.'
+            : 'Còn ' + days + ' ngày đến sự kiện.';
+    }
+
+    document.getElementById('btnCountdownCalc').addEventListener('click', () => {
+        const name = eventNameInput.value.trim() || 'Sự kiện';
+        const d = parseDate(eventDateInput.value);
+        const t = eventTimeInput.value || '00:00';
+        if(!d){
+            alert('Vui lòng chọn ngày sự kiện hợp lệ.');
+            return;
+        }
+        const [hh, mm] = t.split(':').map(Number);
+        d.setHours(hh || 0, mm || 0, 0, 0);
+        targetTime = d;
+
+        countdownTitle.textContent = 'Đếm ngược đến: ' + name;
+        countdownResult.style.display = 'block';
+        updateCountdown();
+
+        if(countdownTimer) clearInterval(countdownTimer);
+        countdownTimer = setInterval(updateCountdown,1000);
+    });
+
+    document.getElementById('btnCountdownReset').addEventListener('click', () => {
+        eventNameInput.value = '';
+        eventDateInput.value = '';
+        eventTimeInput.value = '12:00';
+        countdownResult.style.display = 'none';
+        if(countdownTimer) clearInterval(countdownTimer);
+        countdownTimer = null;
+        targetTime = null;
+    });
+
+    // ---- KHOẢNG CÁCH NGÀY ----
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const diffResult = document.getElementById('diffResult');
+    const diffDays = document.getElementById('diffDays');
+    const diffWeeks = document.getElementById('diffWeeks');
+    const diffHours = document.getElementById('diffHours');
+
+    document.getElementById('btnDiffCalc').addEventListener('click', () => {
+        const s = parseDate(startDateInput.value);
+        const e = parseDate(endDateInput.value);
+        if(!s || !e){
+            alert('Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc.');
+            return;
+        }
+        s.setHours(0,0,0,0);
+        e.setHours(0,0,0,0);
+        let diffMs = e.getTime() - s.getTime();
+        const sign = diffMs >= 0 ? 1 : -1;
+        diffMs = Math.abs(diffMs);
+
+        const days = Math.floor(diffMs/(24*3600*1000))*sign;
+        const hours = days*24;
+        const weeks = (days/7).toFixed(2);
+
+        diffDays.textContent = days;
+        diffWeeks.textContent = weeks;
+        diffHours.textContent = hours;
+        diffResult.style.display = 'block';
+    });
+
+    document.getElementById('btnDiffReset').addEventListener('click', () => {
+        startDateInput.value = '';
+        endDateInput.value = '';
+        diffResult.style.display = 'none';
+    });
+
+    // ---- TÍNH TUỔI ----
+    const birthDateInput = document.getElementById('birthDate');
+    const birthTimeInput = document.getElementById('birthTime');
+
+    const ageResult = document.getElementById('ageResult');
+    const ageYearsEl = document.getElementById('ageYears');
+    const ageMonthsEl = document.getElementById('ageMonths');
+    const ageDaysEl = document.getElementById('ageDays');
+    const totalDaysEl = document.getElementById('totalDays');
+    const totalHoursEl = document.getElementById('totalHours');
+    const totalMinutesEl = document.getElementById('totalMinutes');
+    const nextBirthdayEl = document.getElementById('nextBirthday');
+    const daysToBirthdayEl = document.getElementById('daysToBirthday');
+
+    let lastAgeSummary = '';
+
+    function calcAge(){
+        const b = parseDate(birthDateInput.value);
+        if(!b){
+            alert('Vui lòng chọn ngày sinh hợp lệ.');
+            return;
+        }
+        const t = birthTimeInput.value;
+        if(t){
+            const [hh,mm] = t.split(':').map(Number);
+            b.setHours(hh||0,mm||0,0,0);
+        }else{
+            b.setHours(0,0,0,0);
+        }
+
+        const now = new Date();
+        const nowCopy = new Date(now.getTime());
+
+        let years = nowCopy.getFullYear() - b.getFullYear();
+        let months = nowCopy.getMonth() - b.getMonth();
+        let days = nowCopy.getDate() - b.getDate();
+
+        if(days < 0){
+            const prevMonth = new Date(nowCopy.getFullYear(), nowCopy.getMonth(), 0);
+            days += prevMonth.getDate();
+            months -= 1;
+        }
+        if(months < 0){
+            months += 12;
+            years -= 1;
+        }
+        if(years < 0){
+            alert('Ngày sinh lớn hơn ngày hiện tại?');
+            return;
+        }
+
+        ageYearsEl.textContent = years;
+        ageMonthsEl.textContent = months;
+        ageDaysEl.textContent = days;
+
+        const diffMs = now.getTime() - b.getTime();
+        const totalDays = Math.floor(diffMs / (24*3600*1000));
+        const totalHours = totalDays*24;
+        const totalMinutes = totalHours*60;
+
+        totalDaysEl.textContent = totalDays.toLocaleString('vi-VN');
+        totalHoursEl.textContent = totalHours.toLocaleString('vi-VN');
+        totalMinutesEl.textContent = totalMinutes.toLocaleString('vi-VN');
+
+        let next = new Date(now.getFullYear(), b.getMonth(), b.getDate());
+        if(next < now) {
+            next = new Date(now.getFullYear()+1, b.getMonth(), b.getDate());
+        }
+        const daysToBirthday = Math.ceil((next.getTime() - now.getTime())/(24*3600*1000));
+        const nextStr = next.getDate() + '/' + (next.getMonth()+1) + '/' + next.getFullYear();
+
+        nextBirthdayEl.textContent = nextStr;
+        daysToBirthdayEl.textContent = daysToBirthday;
+
+        ageResult.style.display = 'block';
+
+        lastAgeSummary =
+            `Tuổi hiện tại: ${years} năm, ${months} tháng, ${days} ngày.\n` +
+            `Tổng số ngày đã sống: ${totalDays}.\n` +
+            `Tổng số giờ đã sống: ${totalHours}.\n` +
+            `Tổng số phút đã sống: ${totalMinutes}.\n` +
+            `Sinh nhật tiếp theo: ${nextStr} (còn ${daysToBirthday} ngày).`;
+    }
+
+    document.getElementById('btnAgeCalc').addEventListener('click', calcAge);
+
+    document.getElementById('btnAgeReset').addEventListener('click', () => {
+        birthDateInput.value = '';
+        birthTimeInput.value = '';
+        ageResult.style.display = 'none';
+        lastAgeSummary = '';
+    });
+
+    document.getElementById('btnAgeCopy').addEventListener('click', () => {
+        if(!lastAgeSummary){
+            calcAge();
+        }
+        if(lastAgeSummary){
+            copyText(lastAgeSummary);
+        }
+    });
+
+    document.getElementById('btnAgeCopySmall').addEventListener('click', () => {
+        if(!lastAgeSummary){
+            calcAge();
+        }
+        if(lastAgeSummary){
+            copyText(lastAgeSummary);
+        }
+    });
+</script>
+</body>
+</html>
