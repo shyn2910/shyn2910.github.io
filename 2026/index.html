@@ -5,98 +5,148 @@
 <title>Happy Lunar New Year 2026</title>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+*{box-sizing:border-box}
 html,body{
 margin:0;
+width:100%;
 height:100%;
 overflow:hidden;
-font-family:'Segoe UI',sans-serif;
+font-family:'Poppins',sans-serif;
+background:#000;
 }
 
 body{
-background:url('bg.jpg') center/cover no-repeat;
-color:#ffd700;
+background:url("bg.jpg") center/cover no-repeat fixed;
 }
 
+/* ===== LAYERS ===== */
 .overlay{
 position:absolute;
 inset:0;
-background:rgba(0,0,0,0.55);
+background:linear-gradient(180deg,rgba(0,0,0,.65),rgba(0,0,0,.85));
+z-index:0;
 }
 
+canvas{
+position:absolute;
+inset:0;
+z-index:1;
+pointer-events:none;
+}
+
+/* ===== TOP BAR ===== */
 .logo{
 position:absolute;
 top:20px;
 left:20px;
-width:90px;
-}
-
-.container{
-position:relative;
-z-index:2;
-height:100%;
-display:flex;
-justify-content:center;
-align-items:center;
-}
-
-.card{
-background:rgba(0,0,0,0.6);
-padding:40px 70px;
-border-radius:20px;
-text-align:center;
-box-shadow:0 0 30px gold;
-}
-
-h1{
-font-size:38px;
-letter-spacing:2px;
-margin-bottom:10px;
-}
-
-.time{
-font-size:48px;
-margin:10px 0;
-}
-
-.date,.lunar{
-font-size:18px;
-margin:5px;
-}
-
-.days{
-font-size:52px;
-font-weight:bold;
-color:#ff4444;
-}
-
-.wish{
-margin-top:20px;
-font-size:22px;
-animation:blink 2s infinite;
-}
-
-@keyframes blink{
-0%,100%{opacity:1}
-50%{opacity:0.4}
+width:80px;
+z-index:3;
 }
 
 #musicBtn{
 position:absolute;
 top:20px;
 right:20px;
-background:#b30000;
-color:gold;
+background:linear-gradient(45deg,#ffcc00,#ff6600);
 border:none;
 padding:10px 18px;
-border-radius:8px;
+border-radius:20px;
+color:#000;
+font-weight:600;
 cursor:pointer;
+z-index:3;
 }
 
-canvas{
-position:absolute;
-inset:0;
-z-index:0;
-pointer-events:none;
+/* ===== CENTER CARD ===== */
+.container{
+position:relative;
+z-index:2;
+width:100%;
+height:100%;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.card{
+background:rgba(0,0,0,.55);
+backdrop-filter:blur(12px);
+padding:45px 70px;
+border-radius:25px;
+text-align:center;
+box-shadow:0 0 50px rgba(255,200,0,.8);
+color:#ffd700;
+min-width:360px;
+}
+
+h1{
+margin:0 0 15px;
+font-size:38px;
+letter-spacing:3px;
+}
+
+/* ===== CLOCK ===== */
+.time{
+font-size:54px;
+letter-spacing:4px;
+animation:pulse 1s infinite alternate;
+}
+
+@keyframes pulse{
+from{opacity:0.6}
+to{opacity:1}
+}
+
+.date,.lunar{
+margin-top:8px;
+font-size:18px;
+}
+
+/* ===== FLIP DAYS ===== */
+.flip{
+margin-top:25px;
+display:flex;
+justify-content:center;
+gap:12px;
+}
+
+.flip-box{
+background:#111;
+border-radius:10px;
+width:90px;
+height:120px;
+font-size:60px;
+display:flex;
+align-items:center;
+justify-content:center;
+box-shadow:inset 0 0 10px #000,0 0 10px gold;
+color:#ff4444;
+animation:flip 1s;
+}
+
+@keyframes flip{
+from{transform:rotateX(0deg)}
+to{transform:rotateX(360deg)}
+}
+
+.label{
+margin-top:5px;
+font-size:16px;
+color:#ffcc00;
+}
+
+.wish{
+margin-top:25px;
+font-size:22px;
+color:#ffe066;
+animation:glow 2s infinite alternate;
+}
+
+@keyframes glow{
+from{text-shadow:0 0 5px gold}
+to{text-shadow:0 0 25px gold}
 }
 </style>
 </head>
@@ -104,25 +154,32 @@ pointer-events:none;
 <body>
 
 <div class="overlay"></div>
-<canvas id="firework"></canvas>
+<canvas id="fireworks"></canvas>
 
 <img src="logo.png" class="logo">
 
 <button id="musicBtn">🔊 Bật nhạc</button>
 
 <audio id="music" loop>
-<source src="music.mp3" type="audio/mpeg">
+<source src="music.mp3">
 </audio>
 
 <div class="container">
 <div class="card">
 
-<h1>🎊 ĐẾM NGÀY TẾT 2026 🎊</h1>
-<div class="time" id="clock"></div>
+<h1>🎆 ĐẾM NGÀY TẾT 2026 🎆</h1>
+
+<div class="time" id="clock">00:00:00</div>
+
 <div class="date" id="solar"></div>
 <div class="lunar" id="lunar"></div>
 
-<div>Còn <span class="days" id="days"></span> ngày nữa</div>
+<div class="flip">
+<div>
+<div class="flip-box" id="dayBox">00</div>
+<div class="label">Ngày</div>
+</div>
+</div>
 
 <div class="wish">
 🌸 Chúc Mừng Năm Mới 2026 – An Khang Thịnh Vượng – Vạn Sự Như Ý 🌸
@@ -132,101 +189,87 @@ pointer-events:none;
 </div>
 
 <script>
-// ================= CLOCK =================
-function update(){
-let now=new Date();
-
+// ========= CLOCK =========
+function updateClock(){
+let n=new Date();
 clock.innerHTML=
-String(now.getHours()).padStart(2,0)+":"+
-String(now.getMinutes()).padStart(2,0)+":"+
-String(now.getSeconds()).padStart(2,0);
+String(n.getHours()).padStart(2,0)+":"+
+String(n.getMinutes()).padStart(2,0)+":"+
+String(n.getSeconds()).padStart(2,0);
 
-solar.innerHTML=
-"Dương lịch: "+now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear();
+solar.innerHTML="Dương lịch: "+n.toLocaleDateString("vi-VN");
 
-// Lunar simple
+// Lunar basic
 function jd(d,m,y){
 let a=Math.floor((14-m)/12);
 y=y+4800-a; m=m+12*a-3;
 return d+Math.floor((153*m+2)/5)+365*y+
 Math.floor(y/4)-Math.floor(y/100)+Math.floor(y/400)-32045;
 }
-function newMoon(k){
-let T=k/1236.85;
-let jd=2415020.75933+29.53058868*k;
-return Math.floor(jd+0.5);
-}
-let j=jd(now.getDate(),now.getMonth()+1,now.getFullYear());
+let j=jd(n.getDate(),n.getMonth()+1,n.getFullYear());
 let k=Math.floor((j-2415021)/29.53);
-let m=newMoon(k);
-if(m>j) m=newMoon(k-1);
-let lunarDay=j-m+1;
+let m0=2415021+k*29.53;
+let lunarDay=Math.floor(j-m0)+1;
 let lunarMonth=(k%12)+1;
 lunar.innerHTML="Âm lịch: "+lunarDay+"/"+lunarMonth;
 
 let tet=new Date("2026-02-17");
-let diff=Math.ceil((tet-now)/(1000*60*60*24));
-days.innerHTML= diff>0?diff:"Hôm nay là Tết 🎉";
+let days=Math.ceil((tet-n)/(1000*60*60*24));
+dayBox.innerHTML=days>0?days:"0";
+dayBox.style.animation="none";
+dayBox.offsetHeight;
+dayBox.style.animation="flip 1s";
 }
-setInterval(update,1000);
-update();
+setInterval(updateClock,1000);
+updateClock();
 
-// ================= MUSIC =================
-const music=document.getElementById("music");
-const btn=document.getElementById("musicBtn");
+// ========= MUSIC =========
 let playing=false;
-
-btn.onclick=()=>{
-if(!playing){
-music.play();
-btn.innerText="🔇 Tắt nhạc";
-}else{
-music.pause();
-btn.innerText="🔊 Bật nhạc";
-}
+musicBtn.onclick=()=>{
+if(!playing){music.play();musicBtn.innerText="🔇 Tắt nhạc";}
+else{music.pause();musicBtn.innerText="🔊 Bật nhạc";}
 playing=!playing;
 }
 
-// ================= FIREWORK =================
-const canvas=document.getElementById("firework");
+// ========= FIREWORKS =========
+const canvas=document.getElementById("fireworks");
 const ctx=canvas.getContext("2d");
 canvas.width=innerWidth;
 canvas.height=innerHeight;
 
 let particles=[];
 
-function spawn(){
+function explode(){
 let x=Math.random()*canvas.width;
-let y=Math.random()*canvas.height/2;
-for(let i=0;i<60;i++){
+let y=Math.random()*canvas.height*0.6;
+let color=`hsl(${Math.random()*360},100%,60%)`;
+for(let i=0;i<80;i++){
 particles.push({
 x,y,
-vx:(Math.random()-0.5)*6,
-vy:(Math.random()-0.5)*6,
-life:60
+vx:(Math.random()-0.5)*7,
+vy:(Math.random()-0.5)*7,
+life:60,
+color
 });
 }
 }
 
-function draw(){
+function render(){
 ctx.clearRect(0,0,canvas.width,canvas.height);
-
 particles.forEach((p,i)=>{
-ctx.fillStyle="gold";
+ctx.fillStyle=p.color;
 ctx.fillRect(p.x,p.y,3,3);
 p.x+=p.vx;
 p.y+=p.vy;
 p.life--;
 if(p.life<=0) particles.splice(i,1);
 });
-
-requestAnimationFrame(draw);
+requestAnimationFrame(render);
 }
 
-setInterval(spawn,800);
-draw();
+setInterval(explode,600);
+render();
 </script>
 
 </body>
 </html>
-
