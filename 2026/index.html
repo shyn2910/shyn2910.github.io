@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Happy Lunar New Year 2026</title>
+
+<style>
+html,body{
+margin:0;
+height:100%;
+overflow:hidden;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+background:url('bg.jpg') center/cover no-repeat;
+color:#ffd700;
+}
+
+.overlay{
+position:absolute;
+inset:0;
+background:rgba(0,0,0,0.55);
+}
+
+.logo{
+position:absolute;
+top:20px;
+left:20px;
+width:90px;
+}
+
+.container{
+position:relative;
+z-index:2;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.card{
+background:rgba(0,0,0,0.6);
+padding:40px 70px;
+border-radius:20px;
+text-align:center;
+box-shadow:0 0 30px gold;
+}
+
+h1{
+font-size:38px;
+letter-spacing:2px;
+margin-bottom:10px;
+}
+
+.time{
+font-size:48px;
+margin:10px 0;
+}
+
+.date,.lunar{
+font-size:18px;
+margin:5px;
+}
+
+.days{
+font-size:52px;
+font-weight:bold;
+color:#ff4444;
+}
+
+.wish{
+margin-top:20px;
+font-size:22px;
+animation:blink 2s infinite;
+}
+
+@keyframes blink{
+0%,100%{opacity:1}
+50%{opacity:0.4}
+}
+
+#musicBtn{
+position:absolute;
+top:20px;
+right:20px;
+background:#b30000;
+color:gold;
+border:none;
+padding:10px 18px;
+border-radius:8px;
+cursor:pointer;
+}
+
+canvas{
+position:absolute;
+inset:0;
+z-index:1;
+}
+</style>
+</head>
+
+<body>
+
+<div class="overlay"></div>
+<canvas id="firework"></canvas>
+
+<img src="logo.png" class="logo">
+
+<button id="musicBtn">🔊 Bật nhạc</button>
+
+<audio id="music" loop>
+<source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<div class="container">
+<div class="card">
+
+<h1>🎊 ĐẾM NGÀY TẾT 2026 🎊</h1>
+<div class="time" id="clock"></div>
+<div class="date" id="solar"></div>
+<div class="lunar" id="lunar"></div>
+
+<div>Còn <span class="days" id="days"></span> ngày nữa</div>
+
+<div class="wish">
+🌸 Chúc Mừng Năm Mới 2026 – An Khang Thịnh Vượng – Vạn Sự Như Ý 🌸
+</div>
+
+</div>
+</div>
+
+<script>
+// ================= CLOCK =================
+function update(){
+let now=new Date();
+
+clock.innerHTML=
+String(now.getHours()).padStart(2,0)+":"+
+String(now.getMinutes()).padStart(2,0)+":"+
+String(now.getSeconds()).padStart(2,0);
+
+solar.innerHTML=
+"Dương lịch: "+now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear();
+
+// Lunar simple
+function jd(d,m,y){
+let a=Math.floor((14-m)/12);
+y=y+4800-a; m=m+12*a-3;
+return d+Math.floor((153*m+2)/5)+365*y+
+Math.floor(y/4)-Math.floor(y/100)+Math.floor(y/400)-32045;
+}
+function newMoon(k){
+let T=k/1236.85;
+let jd=2415020.75933+29.53058868*k;
+return Math.floor(jd+0.5);
+}
+let j=jd(now.getDate(),now.getMonth()+1,now.getFullYear());
+let k=Math.floor((j-2415021)/29.53);
+let m=newMoon(k);
+if(m>j) m=newMoon(k-1);
+let lunarDay=j-m+1;
+let lunarMonth=(k%12)+1;
+lunar.innerHTML="Âm lịch: "+lunarDay+"/"+lunarMonth;
+
+let tet=new Date("2026-02-17");
+let diff=Math.ceil((tet-now)/(1000*60*60*24));
+days.innerHTML= diff>0?diff:"Hôm nay là Tết 🎉";
+}
+setInterval(update,1000);
+update();
+
+// ================= MUSIC =================
+const music=document.getElementById("music");
+const btn=document.getElementById("musicBtn");
+let playing=false;
+
+btn.onclick=()=>{
+if(!playing){
+music.play();
+btn.innerText="🔇 Tắt nhạc";
+}else{
+music.pause();
+btn.innerText="🔊 Bật nhạc";
+}
+playing=!playing;
+}
+
+// ================= FIREWORK =================
+const canvas=document.getElementById("firework");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+let particles=[];
+
+function spawn(){
+let x=Math.random()*canvas.width;
+let y=Math.random()*canvas.height/2;
+for(let i=0;i<60;i++){
+particles.push({
+x,y,
+vx:(Math.random()-0.5)*6,
+vy:(Math.random()-0.5)*6,
+life:60
+});
+}
+}
+
+function draw(){
+ctx.fillStyle="rgba(0,0,0,0.2)";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+particles.forEach((p,i)=>{
+ctx.fillStyle="gold";
+ctx.fillRect(p.x,p.y,3,3);
+p.x+=p.vx;
+p.y+=p.vy;
+p.life--;
+if(p.life<=0) particles.splice(i,1);
+});
+
+requestAnimationFrame(draw);
+}
+
+setInterval(spawn,800);
+draw();
+</script>
+
+</body>
+</html>
